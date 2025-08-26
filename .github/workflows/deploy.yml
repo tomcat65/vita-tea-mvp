@@ -1,0 +1,119 @@
+name: Deploy to Firebase
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: functions/package-lock.json
+
+    - name: Install Functions dependencies
+      run: |
+        cd functions
+        npm ci
+
+    - name: Build Functions
+      run: |
+        cd functions  
+        npm run build
+
+    - name: Validate Firebase configuration
+      run: |
+        # Check required files exist
+        test -f firebase.json || exit 1
+        test -f firestore.rules || exit 1
+        test -f public/index.html || exit 1
+
+  deploy-preview:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: functions/package-lock.json
+
+    - name: Install Functions dependencies
+      run: |
+        cd functions
+        npm ci
+
+    - name: Build Functions
+      run: |
+        cd functions
+        npm run build
+
+    - name: Deploy Preview
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
+        projectId: vida-tea
+        expires: 7d
+        channelId: pr-${{ github.event.number }}
+
+  deploy-production:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    environment:
+      name: production
+      url: https://vida-tea.web.app
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: functions/package-lock.json
+
+    - name: Install Functions dependencies
+      run: |
+        cd functions
+        npm ci
+
+    - name: Build Functions
+      run: |
+        cd functions
+        npm run build
+
+    - name: Deploy to Firebase
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
+        projectId: vida-tea
+        target: vida-tea
+
+    - name: Deploy Functions
+      run: |
+        npm install -g firebase-tools
+        echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}' > service-account.json
+        export GOOGLE_APPLICATION_CREDENTIALS=service-account.json
+        firebase deploy --only functions --project vida-tea --non-interactive
