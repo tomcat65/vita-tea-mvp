@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Vita Tea</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        /* shadcn/ui-inspired theme variables */
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --primary: 142.1 76.2% 36.3%;
+            --primary-foreground: 355.7 100% 97.3%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 142.1 76.2% 36.3%;
+            --radius: 0.5rem;
+            --success: 142.1 76.2% 36.3%;
+            --success-foreground: 355.7 100% 97.3%;
+        }
+        
+        /* Custom Tailwind colors using CSS variables */
+        .bg-background { background-color: hsl(var(--background)); }
+        .bg-card { background-color: hsl(var(--card)); }
+        .bg-primary { background-color: hsl(var(--primary)); }
+        .bg-destructive { background-color: hsl(var(--destructive)); }
+        .bg-secondary { background-color: hsl(var(--secondary)); }
+        .bg-success { background-color: hsl(var(--success)); }
+        .text-foreground { color: hsl(var(--foreground)); }
+        .text-card-foreground { color: hsl(var(--card-foreground)); }
+        .text-primary-foreground { color: hsl(var(--primary-foreground)); }
+        .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+        .text-destructive { color: hsl(var(--destructive)); }
+        .text-primary { color: hsl(var(--primary)); }
+        .text-success { color: hsl(var(--success)); }
+        .border-input { border-color: hsl(var(--input)); }
+        .border-destructive { border-color: hsl(var(--destructive)); }
+        .border-success { border-color: hsl(var(--success)); }
+        .ring-ring { --tw-ring-color: hsl(var(--ring)); }
+        
+        /* Focus visible utilities */
+        .focus-visible\:outline-none:focus-visible {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+        
+        .focus-visible\:ring-2:focus-visible {
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+        }
+        
+        .focus-visible\:ring-ring:focus-visible {
+            --tw-ring-color: hsl(var(--ring));
+        }
+        
+        .focus-visible\:ring-offset-2:focus-visible {
+            --tw-ring-offset-width: 2px;
+        }
+        
+        /* Hover utilities */
+        .hover\:bg-primary\/90:hover {
+            background-color: hsl(var(--primary) / 0.9);
+        }
+        
+        .hover\:bg-secondary:hover {
+            background-color: hsl(var(--secondary));
+        }
+        
+        .hover\:text-primary:hover {
+            color: hsl(var(--primary));
+        }
+        
+        /* Transition */
+        .transition-colors {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+        
+        /* Custom button component */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+            height: 2.5rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .btn:focus-visible {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+            --tw-ring-color: hsl(var(--ring));
+            --tw-ring-offset-width: 2px;
+        }
+        
+        .btn:disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        .btn-primary {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .btn-primary:hover {
+            background-color: hsl(var(--primary) / 0.9);
+        }
+        
+        .btn-outline {
+            border: 1px solid hsl(var(--input));
+            background-color: hsl(var(--background));
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        
+        .btn-outline:hover {
+            background-color: hsl(var(--secondary));
+        }
+        
+        /* Custom input component */
+        .input {
+            display: flex;
+            height: 2.5rem;
+            width: 100%;
+            border-radius: calc(var(--radius) - 2px);
+            border: 1px solid hsl(var(--input));
+            background-color: hsl(var(--background));
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        
+        .input::placeholder {
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .input:focus-visible {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+            --tw-ring-color: hsl(var(--ring));
+            --tw-ring-offset-width: 2px;
+        }
+        
+        .input:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        /* Label component */
+        .label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.25rem;
+        }
+        
+        /* Card component */
+        .card {
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        
+        /* Alert component */
+        .alert {
+            position: relative;
+            width: 100%;
+            border-radius: calc(var(--radius) - 2px);
+            border: 1px solid;
+            padding: 1rem;
+        }
+        
+        .alert-destructive {
+            border-color: hsl(var(--destructive) / 0.5);
+            color: hsl(var(--destructive));
+            background-color: hsl(var(--background));
+        }
+        
+        .alert-success {
+            border-color: hsl(var(--success) / 0.5);
+            color: hsl(var(--success));
+            background-color: hsl(var(--background));
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <div class="min-h-screen flex items-center justify-center px-4" 
+         x-data="registerForm()">
+        
+        <div class="max-w-md w-full space-y-8">
+            <!-- Logo/Header -->
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-primary">Vita Tea</h1>
+                <h2 class="mt-6 text-3xl font-extrabold text-foreground">Create your account</h2>
+                <p class="mt-2 text-sm text-muted-foreground">
+                    Already have an account? 
+                    <a href="/login.html" class="font-medium text-primary hover:text-primary transition-colors">
+                        Sign in
+                    </a>
+                </p>
+            </div>
+
+            <!-- Registration Form Card -->
+            <div class="card">
+                <div class="p-6">
+                    <form class="space-y-6" @submit.prevent="handleRegister">
+                        <div class="space-y-4">
+                            <!-- Name Field -->
+                            <div class="space-y-2">
+                                <label for="displayName" class="label">Full Name</label>
+                                <input 
+                                    id="displayName" 
+                                    name="displayName" 
+                                    type="text" 
+                                    required
+                                    x-model="formData.displayName"
+                                    class="input"
+                                    placeholder="John Doe"
+                                >
+                            </div>
+                            
+                            <!-- Email Field -->
+                            <div class="space-y-2">
+                                <label for="email" class="label">Email address</label>
+                                <input 
+                                    id="email" 
+                                    name="email" 
+                                    type="email" 
+                                    autocomplete="email" 
+                                    required
+                                    x-model="formData.email"
+                                    class="input"
+                                    placeholder="name@example.com"
+                                >
+                            </div>
+                            
+                            <!-- Password Field -->
+                            <div class="space-y-2">
+                                <label for="password" class="label">Password</label>
+                                <input 
+                                    id="password" 
+                                    name="password" 
+                                    type="password" 
+                                    autocomplete="new-password" 
+                                    required
+                                    x-model="formData.password"
+                                    class="input"
+                                    placeholder="Minimum 6 characters"
+                                >
+                            </div>
+                            
+                            <!-- Confirm Password Field -->
+                            <div class="space-y-2">
+                                <label for="confirmPassword" class="label">Confirm Password</label>
+                                <input 
+                                    id="confirmPassword" 
+                                    name="confirmPassword" 
+                                    type="password" 
+                                    autocomplete="new-password" 
+                                    required
+                                    x-model="formData.confirmPassword"
+                                    class="input"
+                                    placeholder="Re-enter your password"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Marketing Preferences -->
+                        <div class="flex items-center space-x-2">
+                            <input 
+                                id="marketing" 
+                                name="marketing" 
+                                type="checkbox"
+                                x-model="formData.acceptMarketing"
+                                class="h-4 w-4 text-primary focus:ring-ring border-input rounded transition-colors"
+                            >
+                            <label for="marketing" class="text-sm text-foreground">
+                                Send me special offers and tea tips
+                            </label>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div x-show="error" x-text="error" 
+                             class="alert alert-destructive">
+                        </div>
+
+                        <!-- Success Message -->
+                        <div x-show="success" 
+                             class="alert alert-success">
+                            Account created! Please check your email to verify your account.
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div>
+                            <button 
+                                type="submit"
+                                :disabled="loading"
+                                class="btn btn-primary w-full"
+                            >
+                                <span x-show="!loading">Create Account</span>
+                                <span x-show="loading">Creating account...</span>
+                            </button>
+                        </div>
+
+                        <!-- Social Sign Up -->
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="w-full border-t border-input"></div>
+                                </div>
+                                <div class="relative flex justify-center text-sm">
+                                    <span class="px-2 bg-card text-muted-foreground">Or continue with</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Google Sign Up -->
+                                <button
+                                    type="button"
+                                    @click="handleGoogleSignUp"
+                                    class="btn btn-outline"
+                                >
+                                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                    </svg>
+                                    <span>Google</span>
+                                </button>
+
+                                <!-- Apple Sign Up -->
+                                <button
+                                    type="button"
+                                    @click="handleAppleSignUp"
+                                    class="btn btn-outline"
+                                >
+                                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M17.05 20.28c-.98.95-2.05.88-3.08.38-1.09-.5-2.09-.51-3.24 0-1.45.64-2.2.45-3.06-.37C3.89 16.5 4.56 9.86 9.04 9.61c1.13.05 1.93.61 2.61.59 1-.15 1.97-.79 3.21-.67 1.48.14 2.59.71 3.33 1.81-3.05 1.82-2.33 5.81.8 6.93-.37 1.08-.85 2.14-1.94 3.03m-3.21-15.1c-.17 2.44-2.27 4.38-4.36 4.13-.23-2.2 2.05-4.52 4.36-4.13"/>
+                                    </svg>
+                                    <span>Apple</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { authService } from '/js/services/auth.service.js';
+        
+        function registerForm() {
+            return {
+                formData: {
+                    displayName: '',
+                    email: '',
+                    password: '',
+                    confirmPassword: '',
+                    acceptMarketing: false
+                },
+                loading: false,
+                error: '',
+                success: false,
+
+                async handleRegister() {
+                    this.error = '';
+                    
+                    // Validate passwords match
+                    if (this.formData.password !== this.formData.confirmPassword) {
+                        this.error = 'Passwords do not match';
+                        return;
+                    }
+
+                    // Validate password length
+                    if (this.formData.password.length < 6) {
+                        this.error = 'Password must be at least 6 characters';
+                        return;
+                    }
+
+                    this.loading = true;
+                    
+                    const result = await authService.registerWithEmail(
+                        this.formData.email,
+                        this.formData.password,
+                        this.formData.displayName
+                    );
+
+                    this.loading = false;
+
+                    if (result.success) {
+                        this.success = true;
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 3000);
+                    } else {
+                        this.error = result.error;
+                    }
+                },
+
+                async handleGoogleSignUp() {
+                    this.error = '';
+                    const result = await authService.signInWithGoogle();
+                    
+                    if (result.success) {
+                        window.location.href = '/';
+                    } else {
+                        this.error = result.error;
+                    }
+                },
+
+                async handleAppleSignUp() {
+                    this.error = '';
+                    const result = await authService.signInWithApple();
+                    
+                    if (result.success) {
+                        window.location.href = '/';
+                    } else {
+                        this.error = result.error;
+                    }
+                }
+            }
+        }
+        
+        window.registerForm = registerForm;
+    </script>
+</body>
+</html>

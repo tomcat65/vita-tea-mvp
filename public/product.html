@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Loading Product... - VitaTea</title>
+    <meta name="description" id="page-description" content="VitaTea organic wellness tea product details">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="product">
+    <meta property="og:title" id="og-title" content="">
+    <meta property="og:description" id="og-description" content="">
+    <meta property="og:image" id="og-image" content="">
+    <meta property="og:url" id="og-url" content="">
+    
+    <!-- Structured Data will be injected dynamically -->
+    <script type="application/ld+json" id="product-schema"></script>
+</head>
+<body>
+    <!-- Main Container -->
+    <div x-data="productDetail()" x-init="loadProduct()">
+        <!-- Navigation (placeholder) -->
+        <nav class="bg-white shadow-md">
+            <div class="container mx-auto px-4 py-4">
+                <a href="/" class="text-2xl font-bold text-green-700">VitaTea</a>
+            </div>
+        </nav>
+
+        <!-- Breadcrumbs -->
+        <div class="container mx-auto px-4 py-4">
+            <nav aria-label="Breadcrumb" class="text-sm">
+                <ol class="flex items-center space-x-2">
+                    <li><a href="/" class="text-gray-600 hover:text-green-600">Home</a></li>
+                    <li class="text-gray-400">/</li>
+                    <li><a href="/shop.html" class="text-gray-600 hover:text-green-600">Shop</a></li>
+                    <li class="text-gray-400">/</li>
+                    <li class="text-gray-800 font-medium" x-text="product ? product.name : 'Loading...'"></li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Product Detail Container -->
+        <main class="container mx-auto px-4 pb-16">
+            <!-- Loading State -->
+            <div x-show="loading" class="grid md:grid-cols-2 gap-12 mt-8">
+                <div class="animate-pulse">
+                    <div class="bg-gray-300 h-96 rounded-lg"></div>
+                </div>
+                <div class="animate-pulse">
+                    <div class="h-8 bg-gray-300 rounded mb-4"></div>
+                    <div class="h-4 bg-gray-300 rounded w-3/4 mb-4"></div>
+                    <div class="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div x-show="!loading && error" class="text-center py-16">
+                <p class="text-xl text-gray-600 mb-4" x-text="error"></p>
+                <a href="/shop.html" class="text-green-600 hover:text-green-700 font-semibold">
+                    ← Back to shop
+                </a>
+            </div>
+
+            <!-- Product Content -->
+            <article x-show="!loading && !error && product" class="grid md:grid-cols-2 gap-12 mt-8">
+                <!-- Product Images -->
+                <div class="space-y-4">
+                    <div class="bg-gray-100 rounded-lg overflow-hidden">
+                        <img :src="product?.images?.[0] || '/images/placeholder.jpg'" 
+                             :alt="product?.name" 
+                             class="w-full h-96 object-cover">
+                    </div>
+                    <!-- Organic Certification Badge -->
+                    <div class="flex items-center space-x-2 bg-green-50 p-4 rounded-lg">
+                        <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <p class="font-semibold text-green-800">USDA Certified Organic</p>
+                            <p class="text-sm text-green-600">Ethically sourced from trusted farms</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Information -->
+                <div class="space-y-6">
+                    <!-- Category Badge -->
+                    <div>
+                        <span class="inline-block bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-semibold"
+                              x-text="getCategoryName(product?.category)"></span>
+                    </div>
+
+                    <!-- Product Name & Description -->
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-4" x-text="product?.name"></h1>
+                        <p class="text-gray-600 leading-relaxed" x-text="product?.description"></p>
+                    </div>
+
+                    <!-- Price & Add to Cart -->
+                    <div class="flex items-center justify-between py-6 border-t border-b">
+                        <div>
+                            <p class="text-3xl font-bold text-gray-800" x-text="formatPrice(product?.price)"></p>
+                            <p class="text-sm text-gray-600">Sample trio pack</p>
+                        </div>
+                        <button 
+                            @click="addToCart()"
+                            :disabled="product?.inventory === 0"
+                            class="px-8 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            <span x-text="product?.inventory === 0 ? 'Out of Stock' : 'Add to Cart'"></span>
+                        </button>
+                    </div>
+
+                    <!-- Stock Status -->
+                    <div x-show="product?.inventory > 0 && product?.inventory < 10" class="bg-yellow-50 p-4 rounded-lg">
+                        <p class="text-yellow-800 font-medium">
+                            <span x-text="`Only ${product?.inventory} left in stock`"></span> - order soon!
+                        </p>
+                    </div>
+
+                    <!-- Product Details Tabs -->
+                    <div class="border rounded-lg overflow-hidden">
+                        <div class="flex border-b">
+                            <button 
+                                @click="activeTab = 'ingredients'"
+                                :class="activeTab === 'ingredients' ? 'bg-green-50 text-green-700 border-b-2 border-green-600' : 'text-gray-600'"
+                                class="flex-1 px-4 py-3 font-semibold transition">
+                                Ingredients
+                            </button>
+                            <button 
+                                @click="activeTab = 'benefits'"
+                                :class="activeTab === 'benefits' ? 'bg-green-50 text-green-700 border-b-2 border-green-600' : 'text-gray-600'"
+                                class="flex-1 px-4 py-3 font-semibold transition">
+                                Health Benefits
+                            </button>
+                            <button 
+                                @click="activeTab = 'brewing'"
+                                :class="activeTab === 'brewing' ? 'bg-green-50 text-green-700 border-b-2 border-green-600' : 'text-gray-600'"
+                                class="flex-1 px-4 py-3 font-semibold transition">
+                                Brewing Guide
+                            </button>
+                        </div>
+
+                        <!-- Tab Content -->
+                        <div class="p-6">
+                            <!-- Ingredients Tab -->
+                            <div x-show="activeTab === 'ingredients'" class="space-y-4">
+                                <h3 class="font-bold text-lg mb-3">Premium Organic Ingredients</h3>
+                                <ul class="space-y-2">
+                                    <template x-for="ingredient in product?.metadata?.ingredients" :key="ingredient">
+                                        <li class="flex items-start">
+                                            <svg class="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span x-text="ingredient"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                                <p class="text-sm text-gray-600 mt-4">
+                                    <span class="font-semibold">Caffeine Level:</span> 
+                                    <span x-text="product?.metadata?.caffeineLevel || 'None'"></span>
+                                </p>
+                            </div>
+
+                            <!-- Benefits Tab -->
+                            <div x-show="activeTab === 'benefits'" class="space-y-4">
+                                <h3 class="font-bold text-lg mb-3">Health Benefits</h3>
+                                <ul class="space-y-3">
+                                    <template x-for="benefit in product?.metadata?.healthBenefits" :key="benefit">
+                                        <li class="flex items-start">
+                                            <svg class="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span x-text="benefit"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+
+                            <!-- Brewing Tab -->
+                            <div x-show="activeTab === 'brewing'" class="space-y-4">
+                                <h3 class="font-bold text-lg mb-3">Brewing Instructions</h3>
+                                <p class="text-gray-600 leading-relaxed" x-text="product?.metadata?.brewingInstructions"></p>
+                                <div class="bg-blue-50 p-4 rounded-lg mt-4">
+                                    <p class="text-blue-800 text-sm">
+                                        <strong>Pro tip:</strong> Use filtered water at the recommended temperature for the best flavor extraction.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Related Products Section (placeholder) -->
+            <section x-show="!loading && !error && product" class="mt-16">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">You May Also Like</h2>
+                <div class="text-gray-600">Related products will be displayed here</div>
+            </section>
+        </main>
+
+        <!-- Footer (placeholder) -->
+        <footer class="bg-gray-800 text-white py-8 mt-16">
+            <div class="container mx-auto px-4 text-center">
+                <p>&copy; 2024 VitaTea. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script type="module">
+        import { initializeApp } from '/js/app.js';
+        import { initProductDetail } from '/js/product-detail.js';
+        
+        // Initialize Alpine.js component
+        window.productDetail = function() {
+            return {
+                product: null,
+                loading: true,
+                error: null,
+                activeTab: 'ingredients',
+                
+                async loadProduct() {
+                    await Alpine.store('productDetail').loadProduct();
+                    this.product = Alpine.store('productDetail').product;
+                    this.loading = Alpine.store('productDetail').loading;
+                    this.error = Alpine.store('productDetail').error;
+                },
+                
+                formatPrice(cents) {
+                    return cents ? `$${(cents / 100).toFixed(2)}` : '$0.00';
+                },
+                
+                getCategoryName(category) {
+                    const categoryMap = {
+                        'digestive': 'Digestive Support',
+                        'stress-relief': 'Stress Relief',
+                        'immunity': 'Immunity Boost'
+                    };
+                    return categoryMap[category] || category;
+                },
+                
+                addToCart() {
+                    Alpine.store('productDetail').addToCart();
+                }
+            };
+        };
+        
+        // Initialize app and product detail
+        initializeApp();
+        initProductDetail();
+    </script>
+</body>
+</html>

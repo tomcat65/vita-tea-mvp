@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Our Tea Collections - VitaTea</title>
+    <meta name="description" content="Discover our curated selection of organic wellness tea sample trios. Choose from digestive support, stress relief, and immunity boost collections.">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Shop Organic Wellness Teas - VitaTea">
+    <meta property="og:description" content="Premium organic tea collections for digestive health, stress relief, and immunity. USDA certified organic wellness teas.">
+    <meta property="og:image" content="/images/tea-collections-hero.jpg">
+    <meta property="og:url" content="https://vitatea.com/shop.html">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="VitaTea">
+    <meta name="keywords" content="organic tea, wellness tea, digestive tea, stress relief tea, immunity tea, herbal tea, tea samples">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json" id="collection-schema"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- Main Container -->
+    <div x-data="productCatalog()" x-init="loadProducts()">
+        <!-- Navigation (placeholder - will be replaced with nav component) -->
+        <nav class="bg-white shadow-md">
+            <div class="container mx-auto px-4 py-4">
+                <a href="/" class="text-2xl font-bold text-green-700">VitaTea</a>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="bg-green-50 py-12">
+            <div class="container mx-auto px-4">
+                <h1 class="text-4xl font-bold text-center text-gray-800 mb-4">Our Wellness Tea Collections</h1>
+                <p class="text-lg text-center text-gray-600 max-w-2xl mx-auto">
+                    Experience the healing power of organic herbs with our expertly crafted tea sample trios. 
+                    Each collection targets specific wellness goals with premium, ethically sourced ingredients.
+                </p>
+            </div>
+        </section>
+
+        <!-- Category Filter -->
+        <section class="container mx-auto px-4 py-8">
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <button 
+                    @click="filterByCategory(null)"
+                    :class="currentCategory === null ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'"
+                    class="px-6 py-3 rounded-full font-semibold transition duration-300 hover:shadow-lg">
+                    All Collections
+                </button>
+                <button 
+                    @click="filterByCategory('digestive')"
+                    :class="currentCategory === 'digestive' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'"
+                    class="px-6 py-3 rounded-full font-semibold transition duration-300 hover:shadow-lg">
+                    Digestive Support
+                </button>
+                <button 
+                    @click="filterByCategory('stress-relief')"
+                    :class="currentCategory === 'stress-relief' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'"
+                    class="px-6 py-3 rounded-full font-semibold transition duration-300 hover:shadow-lg">
+                    Stress Relief
+                </button>
+                <button 
+                    @click="filterByCategory('immunity')"
+                    :class="currentCategory === 'immunity' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'"
+                    class="px-6 py-3 rounded-full font-semibold transition duration-300 hover:shadow-lg">
+                    Immunity Boost
+                </button>
+            </div>
+        </section>
+
+        <!-- Product Grid -->
+        <main class="container mx-auto px-4 pb-16">
+            <!-- Loading State -->
+            <div x-show="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <template x-for="i in 3">
+                    <div class="animate-pulse">
+                        <div class="bg-gray-300 h-64 rounded-lg mb-4"></div>
+                        <div class="h-4 bg-gray-300 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Product Grid -->
+            <div x-show="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <template x-for="product in filteredProducts" :key="product.id">
+                    <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                        <product-card 
+                            :product-id="product.id" 
+                            :product-data="JSON.stringify(product)"
+                            @add-to-cart="handleAddToCart($event)"
+                            @view-product="handleViewProduct($event)">
+                        </product-card>
+                    </article>
+                </template>
+            </div>
+
+            <!-- Empty State -->
+            <div x-show="!loading && filteredProducts.length === 0" class="text-center py-16">
+                <p class="text-xl text-gray-600 mb-4">No products found in this category.</p>
+                <button @click="filterByCategory(null)" class="text-green-600 hover:text-green-700 font-semibold">
+                    View all products →
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer (placeholder) -->
+        <footer class="bg-gray-800 text-white py-8 mt-16">
+            <div class="container mx-auto px-4 text-center">
+                <p>&copy; 2024 VitaTea. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script type="module">
+        import { initializeApp } from '/js/app.js';
+        import { initProductsCatalog, handleAddToCart, handleViewProduct, initScrollTracking } from '/js/products.js';
+        import { generateCollectionSchema, initSEO } from '/js/utils/seo.js';
+        import '/js/components/product-card.js';
+        
+        // Initialize Alpine.js component
+        window.productCatalog = function() {
+            return {
+                get products() { return Alpine.store('products').items; },
+                get loading() { return Alpine.store('products').loading; },
+                get currentCategory() { return Alpine.store('products').currentCategory; },
+                get filteredProducts() { return Alpine.store('products').filteredProducts; },
+                
+                async loadProducts() {
+                    await Alpine.store('products').loadProducts();
+                    // Generate structured data after products load
+                    if (Alpine.store('products').items.length > 0) {
+                        const schema = generateCollectionSchema(Alpine.store('products').items);
+                        document.getElementById('collection-schema').textContent = JSON.stringify(schema);
+                    }
+                },
+                
+                filterByCategory(category) {
+                    Alpine.store('products').filterByCategory(category);
+                },
+                
+                handleAddToCart(event) {
+                    handleAddToCart(event);
+                },
+                
+                handleViewProduct(event) {
+                    handleViewProduct(event);
+                }
+            };
+        };
+        
+        // Initialize app and products catalog
+        initializeApp();
+        initProductsCatalog();
+        initScrollTracking();
+        initSEO('catalog');
+    </script>
+</body>
+</html>

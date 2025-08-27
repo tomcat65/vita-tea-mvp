@@ -1,0 +1,130 @@
+/* Vita Tea Custom Styles */
+/* Tailwind CSS loaded via CDN */
+
+/* Custom wellness color palette extending Tailwind */
+:root {
+  --wellness-sage: #87a08a;
+  --wellness-mint: #a8c09a;
+  --wellness-cream: #f5f2ed;
+  --wellness-earth: #8b6b47;
+  --wellness-tea: #6b5644;
+}
+
+/* Premium typography */
+.font-premium {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+}
+
+/* Smooth transitions for interactive elements */
+.transition-wellness {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hero background overlay */
+.hero-overlay {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
+}
+
+/* Card hover effects */
+.wellness-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Premium button styles */
+.btn-primary {
+  @apply bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-wellness hover:bg-green-800 hover:shadow-lg;
+}
+
+.btn-secondary {
+  @apply bg-white text-green-700 px-6 py-3 rounded-lg font-medium border-2 border-green-700 transition-wellness hover:bg-green-50;
+}
+
+/* Navigation sticky behavior */
+.nav-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Mobile menu animations */
+.mobile-menu-enter {
+  animation: slideIn 0.3s ease-out;
+}
+
+.mobile-menu-leave {
+  animation: slideOut 0.3s ease-in;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Loading states */
+.skeleton-loader {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Botanical pattern overlay */
+.botanical-pattern {
+  background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M30 10c0 5.523-4.477 10-10 10S10 15.523 10 10 14.477 0 20 0s10 4.477 10 10zm0 40c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10 10 4.477 10 10z" fill="%239ca3af" fill-opacity="0.05"/%3E%3C/svg%3E');
+}
+
+/* Accessibility focus styles */
+*:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Custom scrollbar for wellness aesthetic */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--wellness-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--wellness-sage);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--wellness-earth);
+}
