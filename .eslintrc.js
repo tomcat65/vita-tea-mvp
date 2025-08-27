@@ -6,6 +6,9 @@ module.exports = {
     node: true,
   },
   extends: ['eslint:recommended', 'prettier'],
+  globals: {
+    Alpine: 'readonly',
+  },
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
@@ -37,6 +40,9 @@ module.exports = {
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+      },
+      globals: {
+        Alpine: 'readonly',
       },
     },
     // Test files

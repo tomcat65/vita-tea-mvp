@@ -2,8 +2,9 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
+import { Request, Response } from 'firebase-functions';
 
 // Initialize Firebase Admin
 initializeApp();
@@ -20,13 +21,13 @@ const ALLOWED_ORIGINS = [
 
 // In development, also allow localhost
 if (process.env.NODE_ENV === 'development') {
-  ALLOWED_ORIGINS.push('http://localhost:3000', 'http://localhost:5000');
+  ALLOWED_ORIGINS.push('http://localhost:3000', 'http://localhost:5000', 'http://localhost:5173');
 }
 
 /**
  * Configure CORS headers for the response
  */
-function setCorsHeaders(req: any, res: any) {
+function setCorsHeaders(req: Request, res: Response) {
   const origin = req.headers.origin;
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.set('Access-Control-Allow-Origin', origin);
@@ -103,6 +104,69 @@ export const config = onRequest(async (req, res) => {
   } catch (error) {
     logger.error('Error serving config', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Analytics tracking endpoint
+ * Receives analytics events from the client and writes them to Firestore
+ */
+export const trackAnalytics = onRequest(async (req, res) => {
+  logger.info('Analytics event received', { method: req.method });
+  
+  // Handle CORS
+  setCorsHeaders(req, res);
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+  
+  // Only accept POST requests
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+  
+  try {
+    // Get the events from request body
+    const { events } = req.body;
+    
+    if (!events || !Array.isArray(events)) {
+      res.status(400).json({ error: 'Invalid request: events array required' });
+      return;
+    }
+    
+    // Validate and write each event
+    const promises = events.map(async (event) => {
+      if (!event.eventName || !event.eventData) {
+        logger.warn('Invalid event structure', event);
+        return;
+      }
+      
+      // Add server timestamp and write to Firestore
+      const analyticsDoc = {
+        eventName: event.eventName,
+        eventData: event.eventData,
+        serverTimestamp: FieldValue.serverTimestamp(),
+        receivedAt: new Date()
+      };
+      
+      return db.collection('analytics').add(analyticsDoc);
+    });
+    
+    await Promise.all(promises);
+    
+    logger.info('Analytics events saved', { count: events.length });
+    res.status(200).json({ 
+      success: true, 
+      message: `${events.length} events tracked successfully` 
+    });
+    
+  } catch (error) {
+    logger.error('Error tracking analytics', error);
+    res.status(500).json({ error: 'Failed to track analytics events' });
   }
 });
 

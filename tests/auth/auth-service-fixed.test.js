@@ -1,11 +1,6 @@
 // Authentication Service Tests - Fixed for proper configuration
 const { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  onAuthStateChanged,
-  setPersistence
+  signOut
 } = require('../mocks/firebase-mock.js');
 
 // Mock the firebase config
@@ -27,7 +22,6 @@ jest.mock('../../public/js/utils/csrf.js', () => ({
 }));
 
 describe('AuthService Rate Limiting', () => {
-  let authService;
   
   beforeEach(() => {
     jest.clearAllMocks();
@@ -40,7 +34,6 @@ describe('AuthService Rate Limiting', () => {
     const rateLimiter = new Map();
     
     const checkRateLimit = (email) => {
-      const now = Date.now();
       const attempts = rateLimiter.get(email);
       
       if (!attempts) {
