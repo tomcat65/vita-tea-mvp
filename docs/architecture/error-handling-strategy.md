@@ -7,37 +7,37 @@
 class ErrorHandler {
   static handle(error, context = '') {
     console.error(`Error in ${context}:`, error);
-    
+
     // User-friendly messages
     const userMessage = this.getUserMessage(error);
     this.showNotification(userMessage, 'error');
-    
+
     // Track in analytics
     analytics.trackEvent('error', {
       message: error.message,
       context,
-      stack: error.stack
+      stack: error.stack,
     });
   }
-  
+
   static getUserMessage(error) {
     const errorMap = {
       'auth/user-not-found': 'No account found with this email',
       'auth/wrong-password': 'Incorrect password',
       'insufficient-inventory': 'Sorry, not enough items in stock',
-      'payment-failed': 'Payment failed. Please try again.'
+      'payment-failed': 'Payment failed. Please try again.',
     };
-    
+
     return errorMap[error.code] || 'Something went wrong. Please try again.';
   }
-  
+
   static showNotification(message, type = 'info') {
     // Show toast notification
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
     document.body.appendChild(toast);
-    
+
     setTimeout(() => toast.remove(), 5000);
   }
 }
@@ -85,16 +85,13 @@ export const processOrder = functions.https.onCall(async (data, context) => {
     if (!data.items || !Array.isArray(data.items)) {
       throw new ValidationError('Invalid order items');
     }
-    
+
     // Process order...
   } catch (error) {
     if (error instanceof AppError) {
-      throw new functions.https.HttpsError(
-        error.code,
-        error.message
-      );
+      throw new functions.https.HttpsError(error.code, error.message);
     }
-    
+
     // Log unexpected errors
     console.error('Unexpected error:', error);
     throw new functions.https.HttpsError(

@@ -5,12 +5,12 @@
 ```javascript
 // Use ES6+ features
 // ✓ Good
-const calculateTotal = (items) => {
+const calculateTotal = items => {
   return items.reduce((sum, item) => sum + item.price, 0);
 };
 
 // ✗ Avoid
-var calculateTotal = function(items) {
+var calculateTotal = function (items) {
   var sum = 0;
   for (var i = 0; i < items.length; i++) {
     sum += items[i].price;
@@ -31,7 +31,8 @@ async function loadProducts() {
 
 // ✗ Avoid
 function loadProducts() {
-  firebaseService.getProducts()
+  firebaseService
+    .getProducts()
     .then(products => displayProducts(products))
     .catch(error => showError(error));
 }

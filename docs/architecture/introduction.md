@@ -1,8 +1,9 @@
 # Introduction
 
-This document outlines the complete fullstack architecture for the Vita-Tea MVP - a Firebase-powered wellness tea e-commerce platform targeting rapid market entry with 50+ orders in month 1. 
+This document outlines the complete fullstack architecture for the Vita-Tea MVP - a Firebase-powered wellness tea e-commerce platform targeting rapid market entry with 50+ orders in month 1.
 
 The architecture prioritizes:
+
 - **Speed to Market**: Firebase ecosystem for accelerated development
 - **MVP Focus**: Pragmatic choices over perfect solutions
 - **Scalability Path**: Foundation that supports future AI agent integration
@@ -17,6 +18,6 @@ N/A - Greenfield project
 
 ## Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|---------|
-| 2025-08-26 | v1.0 | Initial fullstack architecture document | Winston (Architect) |
+| Date       | Version | Description                             | Author              |
+| ---------- | ------- | --------------------------------------- | ------------------- |
+| 2025-08-26 | v1.0    | Initial fullstack architecture document | Winston (Architect) |

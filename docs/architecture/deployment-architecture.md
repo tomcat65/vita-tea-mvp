@@ -6,20 +6,26 @@
 // public/js/config/environment.js
 const ENV = {
   development: {
-    firebaseConfig: { /* dev config */ },
+    firebaseConfig: {
+      /* dev config */
+    },
     stripePublicKey: 'pk_test_...',
-    analyticsEnabled: false
+    analyticsEnabled: false,
   },
   staging: {
-    firebaseConfig: { /* staging config */ },
+    firebaseConfig: {
+      /* staging config */
+    },
     stripePublicKey: 'pk_test_...',
-    analyticsEnabled: true
+    analyticsEnabled: true,
   },
   production: {
-    firebaseConfig: { /* prod config */ },
+    firebaseConfig: {
+      /* prod config */
+    },
     stripePublicKey: 'pk_live_...',
-    analyticsEnabled: true
-  }
+    analyticsEnabled: true,
+  },
 };
 
 export const config = ENV[window.location.hostname] || ENV.production;

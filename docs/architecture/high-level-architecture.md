@@ -10,7 +10,8 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
 
 **Selected Platform: Firebase Platform (All-in-one)**
 
-**Rationale**: 
+**Rationale**:
+
 - Zero build step = faster development and deployment
 - Static hosting with CDN included
 - All Firebase services accessible via client SDK
@@ -18,6 +19,7 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
 - Firebase Extensions eliminate custom backend code
 
 **Key Services:**
+
 - Firebase Hosting (static files + CDN)
 - Firestore (multi-region for reliability)
 - Authentication (Email/Password + Google)
@@ -29,7 +31,8 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
   - Run Stripe Payments
   - Resize Images
 
-**Deployment Host and Regions:** 
+**Deployment Host and Regions:**
+
 - Hosting: Global CDN via Firebase
 - Functions: us-central1
 - Firestore: Multi-region (nam5) for 99.999% availability
@@ -39,6 +42,7 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
 **Structure:** Single Repository (MVP-optimized)
 **Build Tool:** None - Pure static files
 **Package Organization:**
+
 ```
 vita-tea-mvp/
 ├── public/               # All static files served by Firebase
@@ -82,10 +86,10 @@ vita-tea-mvp/
 ```mermaid
 graph TB
     subgraph "Users"
-        C[Customers] 
+        C[Customers]
         A[Admin]
     end
-    
+
     subgraph "Firebase Hosting - Static Files"
         C --> CDN[Firebase Global CDN]
         A --> CDN
@@ -93,21 +97,21 @@ graph TB
         HTML --> JS[Vanilla JavaScript]
         JS --> FSDK[Firebase Client SDK]
     end
-    
+
     subgraph "Firebase Backend Services"
         FSDK --> AUTH[Firebase Auth]
         FSDK --> FS[(Firestore)]
         FSDK --> CS[Cloud Storage]
         FSDK --> FPA[Analytics & Performance]
-        
+
         AUTH --> |Triggers| CF[Cloud Functions]
         FS --> |Triggers| CF
-        
+
         CF --> EXT[Firebase Extensions]
         EXT --> STRIPE[Stripe Payments Ext]
         EXT --> EMAIL[Trigger Email Ext]
     end
-    
+
     subgraph "External APIs"
         STRIPE --> |Webhooks| CF
         EMAIL --> SG[SendGrid API]

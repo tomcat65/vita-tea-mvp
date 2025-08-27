@@ -7,6 +7,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Core HTML pages for the e-commerce experience
 
 **Key Interfaces:**
+
 - Load Firebase SDK and initialize app
 - Import relevant JavaScript modules
 - Provide semantic HTML structure
@@ -20,6 +21,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Centralized Firebase operations and state management
 
 **Key Interfaces:**
+
 - `initializeFirebase()` - App initialization
 - `getCurrentUser()` - Auth state
 - `subscribeToAuth()` - Auth state changes
@@ -34,6 +36,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Handle user authentication flows
 
 **Key Interfaces:**
+
 - `signInWithEmail(email, password)`
 - `signInWithGoogle()`
 - `signUp(email, password, displayName)`
@@ -49,6 +52,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Display and filter tea products
 
 **Key Interfaces:**
+
 - `loadProducts()` - Fetch active products
 - `filterByCategory(category)` - Filter products
 - `renderProductGrid(products)` - Display products
@@ -63,6 +67,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Manage cart state and operations
 
 **Key Interfaces:**
+
 - `addToCart(productId, quantity)`
 - `updateCartItem(productId, newQuantity)`
 - `removeFromCart(productId)`
@@ -78,6 +83,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Handle payment processing flow
 
 **Key Interfaces:**
+
 - `initializeStripe()` - Load Stripe.js
 - `createPaymentIntent()` - Call Cloud Function
 - `confirmPayment()` - Process payment
@@ -92,6 +98,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Order and inventory management
 
 **Key Interfaces:**
+
 - `loadOrders(filters)` - Fetch orders
 - `updateOrderStatus(orderId, status)`
 - `adjustInventory(productId, adjustment)`
@@ -106,6 +113,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Track user behavior and conversions
 
 **Key Interfaces:**
+
 - `trackPageView(page)`
 - `trackEvent(eventType, eventData)`
 - `trackConversion(orderId, revenue)`
@@ -125,34 +133,34 @@ graph TB
         PROD[Product Catalog]
         CART[Cart Component]
         CHECK[Checkout Component]
-        
+
         HTML --> AUTH
         HTML --> PROD
         HTML --> CART
-        
+
         AUTH --> |User State| CART
         AUTH --> |User State| CHECK
         PROD --> |Add Items| CART
         CART --> |Proceed| CHECK
     end
-    
+
     subgraph "Firebase Services"
         FSL[Firebase Service Layer]
         FS[(Firestore)]
         FA[Firebase Auth]
         CF[Cloud Functions]
-        
+
         AUTH <--> FA
         PROD <--> FS
         CART <--> FS
         CHECK --> CF
     end
-    
+
     subgraph "External"
         STRIPE[Stripe.js]
         CHECK <--> STRIPE
     end
-    
+
     ANALYTICS[Analytics Tracker]
     HTML --> ANALYTICS
     PROD --> ANALYTICS

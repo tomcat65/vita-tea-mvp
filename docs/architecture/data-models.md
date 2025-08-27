@@ -7,6 +7,7 @@ Based on the PRD requirements and e-commerce needs, here are the core data model
 **Purpose:** Represents authenticated users including customers and admins
 
 **Key Attributes:**
+
 - uid: string - Firebase Auth UID
 - email: string - User email address
 - displayName: string - User's display name
@@ -17,6 +18,7 @@ Based on the PRD requirements and e-commerce needs, here are the core data model
 - preferences: UserPreferences - User settings
 
 **TypeScript Interface:**
+
 ```typescript
 interface User {
   uid: string;
@@ -36,6 +38,7 @@ interface UserPreferences {
 ```
 
 **Relationships:**
+
 - Has many Orders
 - Has many Addresses
 - Has one Cart
@@ -45,6 +48,7 @@ interface UserPreferences {
 **Purpose:** Represents tea products available for purchase
 
 **Key Attributes:**
+
 - productId: string - Unique product identifier
 - name: string - Product name
 - slug: string - URL-friendly identifier
@@ -57,6 +61,7 @@ interface UserPreferences {
 - metadata: ProductMetadata - Additional product info
 
 **TypeScript Interface:**
+
 ```typescript
 interface Product {
   productId: string;
@@ -82,6 +87,7 @@ interface ProductMetadata {
 ```
 
 **Relationships:**
+
 - Belongs to many Orders (via OrderItems)
 - Has many InventoryLogs
 
@@ -90,6 +96,7 @@ interface ProductMetadata {
 **Purpose:** Represents customer orders
 
 **Key Attributes:**
+
 - orderId: string - Order ID
 - orderNumber: string - Human-readable order number
 - userId: string - Customer UID
@@ -104,6 +111,7 @@ interface ProductMetadata {
 - estimatedDeliveryAt: timestamp - Expected delivery date
 
 **TypeScript Interface:**
+
 ```typescript
 interface Order {
   orderId: string;
@@ -123,7 +131,7 @@ interface Order {
   updatedAt: Timestamp;
 }
 
-type OrderStatus = 
+type OrderStatus =
   | 'pending'
   | 'processing'
   | 'shipped'
@@ -141,6 +149,7 @@ interface OrderItem {
 ```
 
 **Relationships:**
+
 - Belongs to User
 - Has many OrderItems
 - Has many OrderEvents (status changes)
@@ -150,12 +159,14 @@ interface OrderItem {
 **Purpose:** Represents user's shopping cart
 
 **Key Attributes:**
+
 - cartId: string - Cart ID
 - userId: string - User's UID
 - items: CartItem[] - Cart items
 - expiresAt: timestamp - Cart expiration
 
 **TypeScript Interface:**
+
 ```typescript
 interface Cart {
   cartId: string;
@@ -174,6 +185,7 @@ interface CartItem {
 ```
 
 **Relationships:**
+
 - Belongs to User
 - References Products
 
@@ -182,6 +194,7 @@ interface CartItem {
 **Purpose:** Stores shipping/billing addresses
 
 **Key Attributes:**
+
 - addressId: string - Address ID
 - userId: string - User's UID
 - type: 'shipping' | 'billing' - Address type
@@ -193,6 +206,7 @@ interface CartItem {
 - country: string - Country code
 
 **TypeScript Interface:**
+
 ```typescript
 interface Address {
   addressId: string;
@@ -213,6 +227,7 @@ interface Address {
 ```
 
 **Relationships:**
+
 - Belongs to User
 - Used by Orders
 
@@ -221,6 +236,7 @@ interface Address {
 **Purpose:** Tracks all inventory changes for audit and fulfillment
 
 **Key Attributes:**
+
 - logId: string - Log entry ID
 - productId: string - Product reference
 - previousQuantity: number - Quantity before change
@@ -229,6 +245,7 @@ interface Address {
 - referenceId: string - Related entity ID (orderId, etc.)
 
 **TypeScript Interface:**
+
 ```typescript
 interface InventoryLog {
   logId: string;
@@ -244,6 +261,7 @@ interface InventoryLog {
 ```
 
 **Relationships:**
+
 - Belongs to Product
 - References Orders (when applicable)
 
@@ -252,6 +270,7 @@ interface InventoryLog {
 **Purpose:** Tracks order status changes for customer service and fulfillment
 
 **Key Attributes:**
+
 - eventId: string - Event ID
 - orderId: string - Order reference
 - previousStatus: OrderStatus - Status before change
@@ -259,6 +278,7 @@ interface InventoryLog {
 - metadata: object - Additional event data
 
 **TypeScript Interface:**
+
 ```typescript
 interface OrderEvent {
   eventId: string;
@@ -276,6 +296,7 @@ interface OrderEvent {
 ```
 
 **Relationships:**
+
 - Belongs to Order
 
 ## AnalyticsEvent
@@ -283,6 +304,7 @@ interface OrderEvent {
 **Purpose:** Tracks user behavior for conversion optimization and achieving order goals
 
 **Key Attributes:**
+
 - eventId: string - Event ID
 - sessionId: string - Browser session ID
 - userId: string - User ID (if authenticated)
@@ -290,14 +312,21 @@ interface OrderEvent {
 - eventData: object - Event-specific data
 
 **TypeScript Interface:**
+
 ```typescript
 interface AnalyticsEvent {
   eventId: string;
   sessionId: string;
   userId?: string;
-  eventType: 'page_view' | 'product_view' | 'add_to_cart' | 
-             'remove_from_cart' | 'checkout_start' | 'checkout_complete' |
-             'search' | 'filter_apply';
+  eventType:
+    | 'page_view'
+    | 'product_view'
+    | 'add_to_cart'
+    | 'remove_from_cart'
+    | 'checkout_start'
+    | 'checkout_complete'
+    | 'search'
+    | 'filter_apply';
   eventData: {
     productId?: string;
     searchQuery?: string;
@@ -315,5 +344,6 @@ interface AnalyticsEvent {
 ```
 
 **Relationships:**
+
 - Optionally belongs to User
 - References Products (in eventData)

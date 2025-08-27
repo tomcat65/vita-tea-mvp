@@ -2,9 +2,10 @@
 
 ## Introduction
 
-This document outlines the complete fullstack architecture for the Vita-Tea MVP - a Firebase-powered wellness tea e-commerce platform targeting rapid market entry with 50+ orders in month 1. 
+This document outlines the complete fullstack architecture for the Vita-Tea MVP - a Firebase-powered wellness tea e-commerce platform targeting rapid market entry with 50+ orders in month 1.
 
 The architecture prioritizes:
+
 - **Speed to Market**: Firebase ecosystem for accelerated development
 - **MVP Focus**: Pragmatic choices over perfect solutions
 - **Scalability Path**: Foundation that supports future AI agent integration
@@ -19,9 +20,9 @@ N/A - Greenfield project
 
 ### Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|---------|
-| 2025-08-26 | v1.0 | Initial fullstack architecture document | Winston (Architect) |
+| Date       | Version | Description                             | Author              |
+| ---------- | ------- | --------------------------------------- | ------------------- |
+| 2025-08-26 | v1.0    | Initial fullstack architecture document | Winston (Architect) |
 
 ## High Level Architecture
 
@@ -35,7 +36,8 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
 
 **Selected Platform: Firebase Platform (All-in-one)**
 
-**Rationale**: 
+**Rationale**:
+
 - Zero build step = faster development and deployment
 - Static hosting with CDN included
 - All Firebase services accessible via client SDK
@@ -43,6 +45,7 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
 - Firebase Extensions eliminate custom backend code
 
 **Key Services:**
+
 - Firebase Hosting (static files + CDN)
 - Firestore (multi-region for reliability)
 - Authentication (Email/Password + Google)
@@ -54,7 +57,8 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
   - Run Stripe Payments
   - Resize Images
 
-**Deployment Host and Regions:** 
+**Deployment Host and Regions:**
+
 - Hosting: Global CDN via Firebase
 - Functions: us-central1
 - Firestore: Multi-region (nam5) for 99.999% availability
@@ -64,6 +68,7 @@ Based on PRD requirements and MVP goals, here's the platform analysis:
 **Structure:** Single Repository (MVP-optimized)
 **Build Tool:** None - Pure static files
 **Package Organization:**
+
 ```
 vita-tea-mvp/
 ├── public/               # All static files served by Firebase
@@ -107,10 +112,10 @@ vita-tea-mvp/
 ```mermaid
 graph TB
     subgraph "Users"
-        C[Customers] 
+        C[Customers]
         A[Admin]
     end
-    
+
     subgraph "Firebase Hosting - Static Files"
         C --> CDN[Firebase Global CDN]
         A --> CDN
@@ -118,21 +123,21 @@ graph TB
         HTML --> JS[Vanilla JavaScript]
         JS --> FSDK[Firebase Client SDK]
     end
-    
+
     subgraph "Firebase Backend Services"
         FSDK --> AUTH[Firebase Auth]
         FSDK --> FS[(Firestore)]
         FSDK --> CS[Cloud Storage]
         FSDK --> FPA[Analytics & Performance]
-        
+
         AUTH --> |Triggers| CF[Cloud Functions]
         FS --> |Triggers| CF
-        
+
         CF --> EXT[Firebase Extensions]
         EXT --> STRIPE[Stripe Payments Ext]
         EXT --> EMAIL[Trigger Email Ext]
     end
-    
+
     subgraph "External APIs"
         STRIPE --> |Webhooks| CF
         EMAIL --> SG[SendGrid API]
@@ -155,29 +160,29 @@ This is the DEFINITIVE technology selection for the entire project. All developm
 
 ### Technology Stack Table
 
-| Category | Technology | Version | Purpose | Rationale |
-|----------|------------|---------|---------|-----------|
-| Frontend Language | JavaScript (ES6+) | Modern | Client-side logic | No build step, native browser support |
-| Frontend Framework | Vanilla JS | N/A | No framework | Maximum simplicity, zero dependencies |
-| UI Component Library | Web Components | Native | Reusable components | Native browser API, no framework needed |
-| UI Enhancement | Alpine.js | 3.x | Declarative reactivity | 15KB, no build step, HTML-first |
-| Backend Language | TypeScript | 5.3+ | Cloud Functions only | Type safety for critical backend code |
-| Backend Framework | Firebase Functions | 4.9+ | Serverless functions | Payment processing, admin operations |
-| API Style | Client SDK + Functions | N/A | Hybrid approach | Direct Firestore access + secure operations |
-| Database | Firestore | latest | NoSQL document database | Real-time, scalable, managed |
-| Cache | Browser Cache | Native | Static asset caching | Service worker for offline support |
-| File Storage | Cloud Storage | latest | Media storage | Product images with CDN |
-| Authentication | Firebase Auth | latest | User authentication | Email/password + Google OAuth |
-| Frontend Testing | None (MVP) | N/A | Manual testing initially | Focus on shipping, add tests post-launch |
-| Backend Testing | Jest | 29+ | Functions testing | Firebase emulator for critical paths |
-| E2E Testing | Manual + GA | N/A | User testing | Real user data via Analytics |
-| Build Tool | None | N/A | No build process | Direct file serving |
-| Bundler | None | N/A | No bundling | ES6 modules for organization |
-| IaC Tool | Firebase CLI | 13.0+ | Infrastructure deployment | firebase.json configuration |
-| CI/CD | GitHub Actions | N/A | Simple deployment | firebase deploy on push |
-| Monitoring | Firebase Analytics | latest | User behavior tracking | Conversion funnel optimization |
-| Logging | Console + Cloud | latest | Simple logging | Browser console + Cloud Functions logs |
-| CSS Framework | Tailwind CSS | 3.4+ CDN | Utility-first CSS | Via CDN, no build required |
+| Category             | Technology             | Version  | Purpose                   | Rationale                                   |
+| -------------------- | ---------------------- | -------- | ------------------------- | ------------------------------------------- |
+| Frontend Language    | JavaScript (ES6+)      | Modern   | Client-side logic         | No build step, native browser support       |
+| Frontend Framework   | Vanilla JS             | N/A      | No framework              | Maximum simplicity, zero dependencies       |
+| UI Component Library | Web Components         | Native   | Reusable components       | Native browser API, no framework needed     |
+| UI Enhancement       | Alpine.js              | 3.x      | Declarative reactivity    | 15KB, no build step, HTML-first             |
+| Backend Language     | TypeScript             | 5.3+     | Cloud Functions only      | Type safety for critical backend code       |
+| Backend Framework    | Firebase Functions     | 4.9+     | Serverless functions      | Payment processing, admin operations        |
+| API Style            | Client SDK + Functions | N/A      | Hybrid approach           | Direct Firestore access + secure operations |
+| Database             | Firestore              | latest   | NoSQL document database   | Real-time, scalable, managed                |
+| Cache                | Browser Cache          | Native   | Static asset caching      | Service worker for offline support          |
+| File Storage         | Cloud Storage          | latest   | Media storage             | Product images with CDN                     |
+| Authentication       | Firebase Auth          | latest   | User authentication       | Email/password + Google OAuth               |
+| Frontend Testing     | None (MVP)             | N/A      | Manual testing initially  | Focus on shipping, add tests post-launch    |
+| Backend Testing      | Jest                   | 29+      | Functions testing         | Firebase emulator for critical paths        |
+| E2E Testing          | Manual + GA            | N/A      | User testing              | Real user data via Analytics                |
+| Build Tool           | None                   | N/A      | No build process          | Direct file serving                         |
+| Bundler              | None                   | N/A      | No bundling               | ES6 modules for organization                |
+| IaC Tool             | Firebase CLI           | 13.0+    | Infrastructure deployment | firebase.json configuration                 |
+| CI/CD                | GitHub Actions         | N/A      | Simple deployment         | firebase deploy on push                     |
+| Monitoring           | Firebase Analytics     | latest   | User behavior tracking    | Conversion funnel optimization              |
+| Logging              | Console + Cloud        | latest   | Simple logging            | Browser console + Cloud Functions logs      |
+| CSS Framework        | Tailwind CSS           | 3.4+ CDN | Utility-first CSS         | Via CDN, no build required                  |
 
 ## Data Models
 
@@ -188,6 +193,7 @@ Based on the PRD requirements and e-commerce needs, here are the core data model
 **Purpose:** Represents authenticated users including customers and admins
 
 **Key Attributes:**
+
 - uid: string - Firebase Auth UID
 - email: string - User email address
 - displayName: string - User's display name
@@ -198,6 +204,7 @@ Based on the PRD requirements and e-commerce needs, here are the core data model
 - preferences: UserPreferences - User settings
 
 **TypeScript Interface:**
+
 ```typescript
 interface User {
   uid: string;
@@ -217,6 +224,7 @@ interface UserPreferences {
 ```
 
 **Relationships:**
+
 - Has many Orders
 - Has many Addresses
 - Has one Cart
@@ -226,6 +234,7 @@ interface UserPreferences {
 **Purpose:** Represents tea products available for purchase
 
 **Key Attributes:**
+
 - productId: string - Unique product identifier
 - name: string - Product name
 - slug: string - URL-friendly identifier
@@ -238,6 +247,7 @@ interface UserPreferences {
 - metadata: ProductMetadata - Additional product info
 
 **TypeScript Interface:**
+
 ```typescript
 interface Product {
   productId: string;
@@ -263,6 +273,7 @@ interface ProductMetadata {
 ```
 
 **Relationships:**
+
 - Belongs to many Orders (via OrderItems)
 - Has many InventoryLogs
 
@@ -271,6 +282,7 @@ interface ProductMetadata {
 **Purpose:** Represents customer orders
 
 **Key Attributes:**
+
 - orderId: string - Order ID
 - orderNumber: string - Human-readable order number
 - userId: string - Customer UID
@@ -285,6 +297,7 @@ interface ProductMetadata {
 - estimatedDeliveryAt: timestamp - Expected delivery date
 
 **TypeScript Interface:**
+
 ```typescript
 interface Order {
   orderId: string;
@@ -304,7 +317,7 @@ interface Order {
   updatedAt: Timestamp;
 }
 
-type OrderStatus = 
+type OrderStatus =
   | 'pending'
   | 'processing'
   | 'shipped'
@@ -322,6 +335,7 @@ interface OrderItem {
 ```
 
 **Relationships:**
+
 - Belongs to User
 - Has many OrderItems
 - Has many OrderEvents (status changes)
@@ -331,12 +345,14 @@ interface OrderItem {
 **Purpose:** Represents user's shopping cart
 
 **Key Attributes:**
+
 - cartId: string - Cart ID
 - userId: string - User's UID
 - items: CartItem[] - Cart items
 - expiresAt: timestamp - Cart expiration
 
 **TypeScript Interface:**
+
 ```typescript
 interface Cart {
   cartId: string;
@@ -355,6 +371,7 @@ interface CartItem {
 ```
 
 **Relationships:**
+
 - Belongs to User
 - References Products
 
@@ -363,6 +380,7 @@ interface CartItem {
 **Purpose:** Stores shipping/billing addresses
 
 **Key Attributes:**
+
 - addressId: string - Address ID
 - userId: string - User's UID
 - type: 'shipping' | 'billing' - Address type
@@ -374,6 +392,7 @@ interface CartItem {
 - country: string - Country code
 
 **TypeScript Interface:**
+
 ```typescript
 interface Address {
   addressId: string;
@@ -394,6 +413,7 @@ interface Address {
 ```
 
 **Relationships:**
+
 - Belongs to User
 - Used by Orders
 
@@ -402,6 +422,7 @@ interface Address {
 **Purpose:** Tracks all inventory changes for audit and fulfillment
 
 **Key Attributes:**
+
 - logId: string - Log entry ID
 - productId: string - Product reference
 - previousQuantity: number - Quantity before change
@@ -410,6 +431,7 @@ interface Address {
 - referenceId: string - Related entity ID (orderId, etc.)
 
 **TypeScript Interface:**
+
 ```typescript
 interface InventoryLog {
   logId: string;
@@ -425,6 +447,7 @@ interface InventoryLog {
 ```
 
 **Relationships:**
+
 - Belongs to Product
 - References Orders (when applicable)
 
@@ -433,6 +456,7 @@ interface InventoryLog {
 **Purpose:** Tracks order status changes for customer service and fulfillment
 
 **Key Attributes:**
+
 - eventId: string - Event ID
 - orderId: string - Order reference
 - previousStatus: OrderStatus - Status before change
@@ -440,6 +464,7 @@ interface InventoryLog {
 - metadata: object - Additional event data
 
 **TypeScript Interface:**
+
 ```typescript
 interface OrderEvent {
   eventId: string;
@@ -457,6 +482,7 @@ interface OrderEvent {
 ```
 
 **Relationships:**
+
 - Belongs to Order
 
 ### AnalyticsEvent
@@ -464,6 +490,7 @@ interface OrderEvent {
 **Purpose:** Tracks user behavior for conversion optimization and achieving order goals
 
 **Key Attributes:**
+
 - eventId: string - Event ID
 - sessionId: string - Browser session ID
 - userId: string - User ID (if authenticated)
@@ -471,14 +498,21 @@ interface OrderEvent {
 - eventData: object - Event-specific data
 
 **TypeScript Interface:**
+
 ```typescript
 interface AnalyticsEvent {
   eventId: string;
   sessionId: string;
   userId?: string;
-  eventType: 'page_view' | 'product_view' | 'add_to_cart' | 
-             'remove_from_cart' | 'checkout_start' | 'checkout_complete' |
-             'search' | 'filter_apply';
+  eventType:
+    | 'page_view'
+    | 'product_view'
+    | 'add_to_cart'
+    | 'remove_from_cart'
+    | 'checkout_start'
+    | 'checkout_complete'
+    | 'search'
+    | 'filter_apply';
   eventData: {
     productId?: string;
     searchQuery?: string;
@@ -496,6 +530,7 @@ interface AnalyticsEvent {
 ```
 
 **Relationships:**
+
 - Optionally belongs to User
 - References Products (in eventData)
 
@@ -547,7 +582,8 @@ All other operations use the Firebase SDK directly from the browser:
 
 // Product operations (read-only for customers)
 async function getProducts() {
-  const snapshot = await firebase.firestore()
+  const snapshot = await firebase
+    .firestore()
     .collection('products')
     .where('isActive', '==', true)
     .orderBy('category')
@@ -557,7 +593,8 @@ async function getProducts() {
 
 // Real-time cart subscription
 function subscribeToCart(userId, callback) {
-  return firebase.firestore()
+  return firebase
+    .firestore()
     .collection('carts')
     .doc(userId)
     .onSnapshot(doc => {
@@ -568,19 +605,23 @@ function subscribeToCart(userId, callback) {
 // Cart operations (user can only modify their own)
 async function addToCart(userId, productId, quantity) {
   const cartRef = firebase.firestore().collection('carts').doc(userId);
-  return cartRef.set({
-    items: firebase.firestore.FieldValue.arrayUnion({
-      productId,
-      quantity,
-      addedAt: firebase.firestore.Timestamp.now()
-    }),
-    updatedAt: firebase.firestore.Timestamp.now()
-  }, { merge: true });
+  return cartRef.set(
+    {
+      items: firebase.firestore.FieldValue.arrayUnion({
+        productId,
+        quantity,
+        addedAt: firebase.firestore.Timestamp.now(),
+      }),
+      updatedAt: firebase.firestore.Timestamp.now(),
+    },
+    { merge: true }
+  );
 }
 
 // Order history (user can only read their own)
 async function getMyOrders(userId) {
-  const snapshot = await firebase.firestore()
+  const snapshot = await firebase
+    .firestore()
     .collection('orders')
     .where('userId', '==', userId)
     .orderBy('createdAt', 'desc')
@@ -591,17 +632,20 @@ async function getMyOrders(userId) {
 
 // Analytics tracking
 async function trackEvent(eventType, eventData) {
-  return firebase.firestore().collection('analytics').add({
-    eventType,
-    eventData,
-    sessionId: getSessionId(),
-    userId: firebase.auth().currentUser?.uid,
-    timestamp: firebase.firestore.Timestamp.now(),
-    deviceInfo: {
-      userAgent: navigator.userAgent,
-      screenSize: `${screen.width}x${screen.height}`
-    }
-  });
+  return firebase
+    .firestore()
+    .collection('analytics')
+    .add({
+      eventType,
+      eventData,
+      sessionId: getSessionId(),
+      userId: firebase.auth().currentUser?.uid,
+      timestamp: firebase.firestore.Timestamp.now(),
+      deviceInfo: {
+        userAgent: navigator.userAgent,
+        screenSize: `${screen.width}x${screen.height}`,
+      },
+    });
 }
 ```
 
@@ -618,44 +662,44 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
+
     function isAdmin() {
-      return isSignedIn() && 
+      return isSignedIn() &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-    
+
     // Products - anyone can read, only admin can write
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     // Carts - users can only access their own
     match /carts/{userId} {
       allow read, write: if isOwner(userId);
     }
-    
+
     // Orders - users read own, admin reads all
     match /orders/{orderId} {
       allow read: if isOwner(resource.data.userId) || isAdmin();
       allow create: if false; // Only Cloud Functions can create
       allow update: if isAdmin(); // Admin can update status
     }
-    
+
     // Analytics - write only (no reads)
     match /analytics/{eventId} {
       allow write: if true;
       allow read: if false;
     }
-    
+
     // Users - read own profile, admin reads all
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow update: if isOwner(userId) && 
+      allow update: if isOwner(userId) &&
         request.resource.data.role == resource.data.role; // Can't change own role
     }
   }
@@ -672,19 +716,20 @@ const stripe = Stripe('pk_live_...');
 
 async function processPayment(cartData) {
   // 1. Call Cloud Function to create payment intent
-  const { data } = await firebase.functions()
+  const { data } = await firebase
+    .functions()
     .httpsCallable('stripeCreateIntent')({
-      cartId: firebase.auth().currentUser.uid
-    });
-  
+    cartId: firebase.auth().currentUser.uid,
+  });
+
   // 2. Use Stripe.js to handle payment
   const { error } = await stripe.confirmCardPayment(data.clientSecret, {
     payment_method: {
       card: cardElement,
-      billing_details: { name, email }
-    }
+      billing_details: { name, email },
+    },
   });
-  
+
   if (!error) {
     // Payment successful, order created by webhook
     window.location.href = `/order-confirmation.html?order=${data.orderId}`;
@@ -701,6 +746,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Core HTML pages for the e-commerce experience
 
 **Key Interfaces:**
+
 - Load Firebase SDK and initialize app
 - Import relevant JavaScript modules
 - Provide semantic HTML structure
@@ -714,6 +760,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Centralized Firebase operations and state management
 
 **Key Interfaces:**
+
 - `initializeFirebase()` - App initialization
 - `getCurrentUser()` - Auth state
 - `subscribeToAuth()` - Auth state changes
@@ -728,6 +775,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Handle user authentication flows
 
 **Key Interfaces:**
+
 - `signInWithEmail(email, password)`
 - `signInWithGoogle()`
 - `signUp(email, password, displayName)`
@@ -743,6 +791,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Display and filter tea products
 
 **Key Interfaces:**
+
 - `loadProducts()` - Fetch active products
 - `filterByCategory(category)` - Filter products
 - `renderProductGrid(products)` - Display products
@@ -757,6 +806,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Manage cart state and operations
 
 **Key Interfaces:**
+
 - `addToCart(productId, quantity)`
 - `updateCartItem(productId, newQuantity)`
 - `removeFromCart(productId)`
@@ -772,6 +822,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Handle payment processing flow
 
 **Key Interfaces:**
+
 - `initializeStripe()` - Load Stripe.js
 - `createPaymentIntent()` - Call Cloud Function
 - `confirmPayment()` - Process payment
@@ -786,6 +837,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Order and inventory management
 
 **Key Interfaces:**
+
 - `loadOrders(filters)` - Fetch orders
 - `updateOrderStatus(orderId, status)`
 - `adjustInventory(productId, adjustment)`
@@ -800,6 +852,7 @@ Based on our vanilla JavaScript architecture, here are the major logical compone
 **Responsibility:** Track user behavior and conversions
 
 **Key Interfaces:**
+
 - `trackPageView(page)`
 - `trackEvent(eventType, eventData)`
 - `trackConversion(orderId, revenue)`
@@ -819,34 +872,34 @@ graph TB
         PROD[Product Catalog]
         CART[Cart Component]
         CHECK[Checkout Component]
-        
+
         HTML --> AUTH
         HTML --> PROD
         HTML --> CART
-        
+
         AUTH --> |User State| CART
         AUTH --> |User State| CHECK
         PROD --> |Add Items| CART
         CART --> |Proceed| CHECK
     end
-    
+
     subgraph "Firebase Services"
         FSL[Firebase Service Layer]
         FS[(Firestore)]
         FA[Firebase Auth]
         CF[Cloud Functions]
-        
+
         AUTH <--> FA
         PROD <--> FS
         CART <--> FS
         CHECK --> CF
     end
-    
+
     subgraph "External"
         STRIPE[Stripe.js]
         CHECK <--> STRIPE
     end
-    
+
     ANALYTICS[Analytics Tracker]
     HTML --> ANALYTICS
     PROD --> ANALYTICS
@@ -867,10 +920,12 @@ Based on the PRD requirements and our vanilla JS architecture, here are the exte
 - **Rate Limits:** No strict limits for normal usage
 
 **Key Endpoints Used:**
+
 - Client-side: Stripe Elements, Payment Intents (via Stripe.js)
 - Server-side webhooks: `POST /stripe/webhook` - Payment confirmations
 
-**Integration Notes:** 
+**Integration Notes:**
+
 - Use Firebase Extension "Run Payments with Stripe" for simplified integration
 - Stripe.js handles PCI compliance by tokenizing cards client-side
 - Webhooks secured with signature verification
@@ -884,10 +939,12 @@ Based on the PRD requirements and our vanilla JS architecture, here are the exte
 - **Rate Limits:** Based on SendGrid plan
 
 **Key Endpoints Used:**
+
 - Extension auto-triggers on Firestore document writes
 - Email templates stored in Firestore
 
 **Integration Notes:**
+
 - "Trigger Email" Firebase Extension handles all API calls
 - No direct integration needed in our code
 - Email templates use Handlebars syntax
@@ -901,10 +958,12 @@ Based on the PRD requirements and our vanilla JS architecture, here are the exte
 - **Rate Limits:** Standard Google quotas
 
 **Key Endpoints Used:**
+
 - All handled through Firebase Auth SDK
 - `firebase.auth().signInWithPopup(googleProvider)`
 
 **Integration Notes:**
+
 - Configure in Firebase Console
 - No direct API calls needed
 - Provides user email and basic profile
@@ -918,12 +977,14 @@ Based on the PRD requirements and our vanilla JS architecture, here are the exte
 - **Rate Limits:** Generous free tier limits
 
 **Key Services:**
+
 - Firestore: 50K reads/20K writes per day (free)
 - Auth: 10K verifications per month (free)
 - Storage: 5GB stored, 1GB/day download (free)
 - Functions: 125K invocations per month (free)
 
 **Integration Notes:**
+
 - All accessed via Firebase SDK
 - Real-time listeners count as single read
 - Batch operations to optimize quota usage
@@ -951,11 +1012,11 @@ sequenceDiagram
     FB->>FS: Create user document
     FB-->>B: Return user token
     B->>B: Store auth state
-    
+
     U->>B: Add tea to cart
     B->>FS: Create/update cart document
     FS-->>B: Real-time cart update
-    
+
     U->>B: Proceed to checkout
     B->>B: Load Stripe.js
     U->>B: Enter payment details
@@ -964,14 +1025,14 @@ sequenceDiagram
     CF->>S: Create payment intent
     S-->>CF: Return client secret
     CF-->>B: Return to browser
-    
+
     B->>S: Confirm payment (Stripe.js)
     S->>CF: Webhook: payment_intent.succeeded
     CF->>FS: Create order document
     CF->>FS: Update inventory
     CF->>FS: Clear user cart
     CF->>E: Trigger order confirmation email
-    
+
     B->>B: Redirect to confirmation page
     E->>U: Send order email
 ```
@@ -992,24 +1053,24 @@ sequenceDiagram
     FB->>FS: Check user role
     FS-->>FB: Confirm admin role
     FB-->>B: Admin access granted
-    
+
     B->>FS: Subscribe to orders collection
     FS-->>B: Real-time order updates
-    
+
     A->>B: Select order to process
     B->>FS: Get order details
-    
+
     A->>B: Update status to "processing"
     B->>FS: Update order document
     FS->>CF: Trigger: onOrderStatusChanged
     CF->>E: Send status update email
-    
+
     A->>B: Print shipping label
     A->>B: Update status to "shipped"
     B->>FS: Update order with tracking
     FS->>CF: Trigger: onOrderStatusChanged
     CF->>E: Send shipping notification
-    
+
     E->>Customer: Shipping confirmation email
 ```
 
@@ -1025,27 +1086,27 @@ sequenceDiagram
     participant CF as Cloud Functions
 
     Note over B1,B2: Both customers viewing same product
-    
+
     B1->>FS: Subscribe to product inventory
     B2->>FS: Subscribe to product inventory
-    
+
     C1->>B1: Add 3 units to cart
     B1->>FS: Update cart
-    
+
     C2->>B2: Add 5 units to cart
     B2->>FS: Update cart
-    
+
     C1->>B1: Complete checkout
     B1->>CF: Create payment intent
     CF->>FS: Check available inventory
     Note over CF: Inventory: 10 units available
     CF->>S: Process payment
-    
+
     S->>CF: Payment successful
     CF->>FS: Reduce inventory by 3
     FS-->>B1: Inventory update: 7 remaining
     FS-->>B2: Inventory update: 7 remaining
-    
+
     Note over B2: Updates shown in real-time
     C2->>B2: Tries to checkout 5 units
     B2->>CF: Create payment intent
@@ -1069,26 +1130,26 @@ sequenceDiagram
     G->>B: Browse products
     G->>B: Add to cart (not logged in)
     B->>LS: Store cart locally
-    
+
     G->>B: Proceed to checkout
     B->>B: Show guest checkout option
-    
+
     G->>B: Enter email & shipping info
     G->>B: Enter payment details
     B->>CF: Create guest payment intent
     CF->>CF: Create temporary checkout session
-    
+
     Note over B: Payment processed successfully
-    
+
     B->>B: Offer account creation
     G->>B: Choose to create account
     B->>FB: Create account with email
     FB->>FS: Create user document
-    
+
     B->>LS: Get local cart data
     B->>FS: Merge cart to user account
     B->>FS: Associate order with new account
-    
+
     FB-->>B: Account created
     B->>G: Show order in account history
 ```
@@ -1359,7 +1420,7 @@ class ProductCard extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
   }
-  
+
   connectedCallback() {
     const product = JSON.parse(this.getAttribute('data-product'));
     this.shadowRoot.innerHTML = `
@@ -1379,17 +1440,20 @@ class ProductCard extends HTMLElement {
         <button id="add-to-cart">Add to Cart</button>
       </div>
     `;
-    
-    this.shadowRoot.getElementById('add-to-cart')
+
+    this.shadowRoot
+      .getElementById('add-to-cart')
       .addEventListener('click', () => this.addToCart(product));
   }
-  
+
   async addToCart(product) {
     // Dispatch custom event that cart.js listens for
-    this.dispatchEvent(new CustomEvent('add-to-cart', {
-      detail: product,
-      bubbles: true
-    }));
+    this.dispatchEvent(
+      new CustomEvent('add-to-cart', {
+        detail: product,
+        bubbles: true,
+      })
+    );
   }
 }
 
@@ -1409,14 +1473,17 @@ document.addEventListener('alpine:init', () => {
     email: null,
     displayName: null,
     role: 'customer',
-    
+
     async init() {
-      firebase.auth().onAuthStateChanged(async (user) => {
+      firebase.auth().onAuthStateChanged(async user => {
         if (user) {
-          const userDoc = await firebase.firestore()
-            .collection('users').doc(user.uid).get();
+          const userDoc = await firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+            .get();
           const userData = userDoc.data();
-          
+
           this.isAuthenticated = true;
           this.uid = user.uid;
           this.email = user.email;
@@ -1427,20 +1494,20 @@ document.addEventListener('alpine:init', () => {
         }
       });
     },
-    
+
     reset() {
       this.isAuthenticated = false;
       this.uid = null;
       this.email = null;
       this.displayName = null;
       this.role = 'customer';
-    }
+    },
   });
-  
+
   Alpine.store('cart', {
     items: [],
     total: 0,
-    
+
     init() {
       // Subscribe to cart changes if authenticated
       Alpine.effect(() => {
@@ -1452,10 +1519,12 @@ document.addEventListener('alpine:init', () => {
         }
       });
     },
-    
+
     subscribeToCart(userId) {
-      return firebase.firestore()
-        .collection('carts').doc(userId)
+      return firebase
+        .firestore()
+        .collection('carts')
+        .doc(userId)
         .onSnapshot(doc => {
           if (doc.exists) {
             this.items = doc.data().items || [];
@@ -1463,16 +1532,16 @@ document.addEventListener('alpine:init', () => {
           }
         });
     },
-    
+
     loadGuestCart() {
       const saved = localStorage.getItem('guest-cart');
       this.items = saved ? JSON.parse(saved) : [];
       this.calculateTotal();
     },
-    
+
     calculateTotal() {
       // Calculate from items
-    }
+    },
   });
 });
 ```
@@ -1509,25 +1578,29 @@ document.addEventListener('alpine:init', () => {
 // public/js/auth-guard.js
 class AuthGuard {
   static async checkAccess(requiredRole = 'customer') {
-    return new Promise((resolve) => {
-      firebase.auth().onAuthStateChanged(async (user) => {
+    return new Promise(resolve => {
+      firebase.auth().onAuthStateChanged(async user => {
         if (!user) {
-          window.location.href = '/login.html?redirect=' + 
+          window.location.href =
+            '/login.html?redirect=' +
             encodeURIComponent(window.location.pathname);
           return;
         }
-        
+
         if (requiredRole === 'admin') {
-          const userDoc = await firebase.firestore()
-            .collection('users').doc(user.uid).get();
+          const userDoc = await firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+            .get();
           const userData = userDoc.data();
-          
+
           if (userData.role !== 'admin') {
             window.location.href = '/';
             return;
           }
         }
-        
+
         resolve(user);
       });
     });
@@ -1554,23 +1627,22 @@ class FirebaseService {
     this.functions = firebase.functions();
     this.storage = firebase.storage();
   }
-  
+
   // Products
   async getProducts(category = null) {
-    let query = this.db.collection('products')
-      .where('isActive', '==', true);
-      
+    let query = this.db.collection('products').where('isActive', '==', true);
+
     if (category) {
       query = query.where('category', '==', category);
     }
-    
+
     const snapshot = await query.get();
     return snapshot.docs.map(doc => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
   }
-  
+
   // Cart operations
   async addToCart(productId, quantity) {
     const user = this.auth.currentUser;
@@ -1579,22 +1651,24 @@ class FirebaseService {
       CartService.addToGuestCart(productId, quantity);
       return;
     }
-    
+
     const cartRef = this.db.collection('carts').doc(user.uid);
-    return cartRef.set({
-      items: firebase.firestore.FieldValue.arrayUnion({
-        productId,
-        quantity,
-        addedAt: firebase.firestore.Timestamp.now()
-      }),
-      updatedAt: firebase.firestore.Timestamp.now()
-    }, { merge: true });
+    return cartRef.set(
+      {
+        items: firebase.firestore.FieldValue.arrayUnion({
+          productId,
+          quantity,
+          addedAt: firebase.firestore.Timestamp.now(),
+        }),
+        updatedAt: firebase.firestore.Timestamp.now(),
+      },
+      { merge: true }
+    );
   }
-  
+
   // Checkout
   async createPaymentIntent(shippingAddress) {
-    const createIntent = this.functions
-      .httpsCallable('stripeCreateIntent');
+    const createIntent = this.functions.httpsCallable('stripeCreateIntent');
     return createIntent({ shippingAddress });
   }
 }
@@ -1612,7 +1686,7 @@ class AnalyticsService {
     this.sessionId = this.getOrCreateSessionId();
     this.db = firebase.firestore();
   }
-  
+
   getOrCreateSessionId() {
     let sessionId = sessionStorage.getItem('sessionId');
     if (!sessionId) {
@@ -1621,10 +1695,10 @@ class AnalyticsService {
     }
     return sessionId;
   }
-  
+
   async trackEvent(eventType, eventData = {}) {
     const user = firebase.auth().currentUser;
-    
+
     const event = {
       eventType,
       eventData,
@@ -1633,36 +1707,36 @@ class AnalyticsService {
       deviceInfo: {
         userAgent: navigator.userAgent,
         screenSize: `${screen.width}x${screen.height}`,
-        referrer: document.referrer
+        referrer: document.referrer,
       },
-      timestamp: firebase.firestore.Timestamp.now()
+      timestamp: firebase.firestore.Timestamp.now(),
     };
-    
+
     // Send to Firebase Analytics
     if (window.gtag) {
       gtag('event', eventType, eventData);
     }
-    
+
     // Also store in Firestore for custom analysis
     return this.db.collection('analytics').add(event);
   }
-  
+
   trackPageView() {
     this.trackEvent('page_view', {
       page: window.location.pathname,
-      title: document.title
+      title: document.title,
     });
   }
-  
+
   trackAddToCart(product, quantity) {
     this.trackEvent('add_to_cart', {
       productId: product.productId,
       productName: product.name,
       quantity,
-      value: product.price * quantity / 100
+      value: (product.price * quantity) / 100,
     });
   }
-  
+
   trackPurchase(order) {
     this.trackEvent('purchase', {
       orderId: order.orderId,
@@ -1672,8 +1746,8 @@ class AnalyticsService {
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
-        price: item.price / 100
-      }))
+        price: item.price / 100,
+      })),
     });
   }
 }
@@ -1722,93 +1796,97 @@ import { stripe } from '../config/stripe';
 import { db } from '../config/firebase';
 import { OrderService } from '../services/order.service';
 
-export const createPaymentIntent = functions.https.onCall(async (data, context) => {
-  // Verify user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'Must be logged in to create payment intent'
-    );
-  }
-
-  const { shippingAddress } = data;
-  const userId = context.auth.uid;
-
-  try {
-    // Get user's cart
-    const cartDoc = await db.collection('carts').doc(userId).get();
-    if (!cartDoc.exists || !cartDoc.data()?.items?.length) {
+export const createPaymentIntent = functions.https.onCall(
+  async (data, context) => {
+    // Verify user is authenticated
+    if (!context.auth) {
       throw new functions.https.HttpsError(
-        'failed-precondition',
-        'Cart is empty'
+        'unauthenticated',
+        'Must be logged in to create payment intent'
       );
     }
 
-    // Calculate totals
-    const orderData = await OrderService.calculateOrderTotals(
-      cartDoc.data().items,
-      shippingAddress
-    );
+    const { shippingAddress } = data;
+    const userId = context.auth.uid;
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: orderData.total,
-      currency: 'usd',
-      metadata: {
-        userId,
-        orderData: JSON.stringify(orderData)
+    try {
+      // Get user's cart
+      const cartDoc = await db.collection('carts').doc(userId).get();
+      if (!cartDoc.exists || !cartDoc.data()?.items?.length) {
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'Cart is empty'
+        );
       }
-    });
 
-    // Create pending order
-    const order = await OrderService.createPendingOrder({
-      ...orderData,
-      userId,
-      stripePaymentIntentId: paymentIntent.id,
-      shippingAddress
-    });
+      // Calculate totals
+      const orderData = await OrderService.calculateOrderTotals(
+        cartDoc.data().items,
+        shippingAddress
+      );
 
-    return {
-      clientSecret: paymentIntent.client_secret,
-      orderId: order.id,
-      amount: orderData.total
-    };
-  } catch (error) {
-    console.error('Payment intent creation failed:', error);
-    throw new functions.https.HttpsError(
-      'internal',
-      'Failed to create payment intent'
-    );
+      // Create payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: orderData.total,
+        currency: 'usd',
+        metadata: {
+          userId,
+          orderData: JSON.stringify(orderData),
+        },
+      });
+
+      // Create pending order
+      const order = await OrderService.createPendingOrder({
+        ...orderData,
+        userId,
+        stripePaymentIntentId: paymentIntent.id,
+        shippingAddress,
+      });
+
+      return {
+        clientSecret: paymentIntent.client_secret,
+        orderId: order.id,
+        amount: orderData.total,
+      };
+    } catch (error) {
+      console.error('Payment intent creation failed:', error);
+      throw new functions.https.HttpsError(
+        'internal',
+        'Failed to create payment intent'
+      );
+    }
   }
-});
+);
 
 // Stripe webhook handler
-export const handleStripeWebhook = functions.https.onRequest(async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const endpointSecret = functions.config().stripe.webhook_secret;
+export const handleStripeWebhook = functions.https.onRequest(
+  async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const endpointSecret = functions.config().stripe.webhook_secret;
 
-  try {
-    const event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig,
-      endpointSecret
-    );
+    try {
+      const event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        sig,
+        endpointSecret
+      );
 
-    switch (event.type) {
-      case 'payment_intent.succeeded':
-        await OrderService.confirmOrder(event.data.object);
-        break;
-      case 'payment_intent.payment_failed':
-        await OrderService.failOrder(event.data.object);
-        break;
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          await OrderService.confirmOrder(event.data.object);
+          break;
+        case 'payment_intent.payment_failed':
+          await OrderService.failOrder(event.data.object);
+          break;
+      }
+
+      res.json({ received: true });
+    } catch (err) {
+      console.error('Webhook error:', err);
+      res.status(400).send(`Webhook Error: ${err.message}`);
     }
-
-    res.json({ received: true });
-  } catch (err) {
-    console.error('Webhook error:', err);
-    res.status(400).send(`Webhook Error: ${err.message}`);
   }
-});
+);
 ```
 
 ### Database Architecture
@@ -1852,26 +1930,26 @@ export async function updateInventoryWithTransaction(
   orderId?: string
 ): Promise<void> {
   const productRef = db.collection('products').doc(productId);
-  
-  return db.runTransaction(async (transaction) => {
+
+  return db.runTransaction(async transaction => {
     const productDoc = await transaction.get(productRef);
-    
+
     if (!productDoc.exists) {
       throw new Error('Product not found');
     }
-    
+
     const currentInventory = productDoc.data().inventory;
     const newInventory = currentInventory + quantityChange;
-    
+
     if (newInventory < 0) {
       throw new Error('Insufficient inventory');
     }
-    
+
     transaction.update(productRef, {
       inventory: newInventory,
-      updatedAt: Timestamp.now()
+      updatedAt: Timestamp.now(),
     });
-    
+
     // Log the inventory change
     const logRef = db.collection('inventoryLogs').doc();
     transaction.set(logRef, {
@@ -1881,7 +1959,7 @@ export async function updateInventoryWithTransaction(
       changeType: quantityChange < 0 ? 'order' : 'restock',
       referenceId: orderId,
       createdAt: Timestamp.now(),
-      createdBy: 'system'
+      createdBy: 'system',
     });
   });
 }
@@ -1898,29 +1976,35 @@ import { Timestamp } from 'firebase-admin/firestore';
 export class OrderRepository {
   private collection = db.collection('orders');
 
-  async create(orderData: Omit<Order, 'orderId' | 'createdAt' | 'updatedAt'>): Promise<Order> {
+  async create(
+    orderData: Omit<Order, 'orderId' | 'createdAt' | 'updatedAt'>
+  ): Promise<Order> {
     const orderRef = this.collection.doc();
     const order: Order = {
       ...orderData,
       orderId: orderRef.id,
       createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
+      updatedAt: Timestamp.now(),
     };
-    
+
     await orderRef.set(order);
     return order;
   }
 
-  async updateStatus(orderId: string, status: OrderStatus, metadata?: any): Promise<void> {
+  async updateStatus(
+    orderId: string,
+    status: OrderStatus,
+    metadata?: any
+  ): Promise<void> {
     const batch = db.batch();
-    
+
     // Update order
     const orderRef = this.collection.doc(orderId);
     batch.update(orderRef, {
       status,
-      updatedAt: Timestamp.now()
+      updatedAt: Timestamp.now(),
     });
-    
+
     // Create order event
     const eventRef = db.collection('orderEvents').doc();
     batch.set(eventRef, {
@@ -1929,9 +2013,9 @@ export class OrderRepository {
       newStatus: status,
       metadata,
       createdAt: Timestamp.now(),
-      createdBy: 'system'
+      createdBy: 'system',
     });
-    
+
     await batch.commit();
   }
 
@@ -1941,7 +2025,7 @@ export class OrderRepository {
       .orderBy('createdAt', 'desc')
       .limit(limit)
       .get();
-    
+
     return snapshot.docs.map(doc => doc.data() as Order);
   }
 }
@@ -1960,12 +2044,12 @@ sequenceDiagram
 
     C->>FB: signInWithEmailAndPassword()
     FB-->>C: Auth Token
-    
+
     C->>CF: Call function with token
     CF->>CF: Verify token
     CF->>FS: Check user role
     FS-->>CF: User data with role
-    
+
     alt is Admin
         CF->>CF: Execute admin operation
         CF-->>C: Success response
@@ -1999,16 +2083,13 @@ export async function requireAuth(
 
   const userDoc = await db.collection('users').doc(context.auth.uid).get();
   if (!userDoc.exists) {
-    throw new functions.https.HttpsError(
-      'not-found',
-      'User profile not found'
-    );
+    throw new functions.https.HttpsError('not-found', 'User profile not found');
   }
 
   return {
     uid: context.auth.uid,
     email: context.auth.token.email || '',
-    role: userDoc.data()?.role || 'customer'
+    role: userDoc.data()?.role || 'customer',
   };
 }
 
@@ -2016,28 +2097,30 @@ export async function requireAdmin(
   context: functions.https.CallableContext
 ): Promise<AuthContext> {
   const authContext = await requireAuth(context);
-  
+
   if (authContext.role !== 'admin') {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Admin access required'
     );
   }
-  
+
   return authContext;
 }
 
 // Usage example
-export const adminAdjustInventory = functions.https.onCall(async (data, context) => {
-  await requireAdmin(context);
-  
-  const { productId, adjustment, reason } = data;
-  
-  // Admin-only inventory adjustment logic
-  await adjustInventory(productId, adjustment, reason);
-  
-  return { success: true };
-});
+export const adminAdjustInventory = functions.https.onCall(
+  async (data, context) => {
+    await requireAdmin(context);
+
+    const { productId, adjustment, reason } = data;
+
+    // Admin-only inventory adjustment logic
+    await adjustInventory(productId, adjustment, reason);
+
+    return { success: true };
+  }
+);
 ```
 
 ## Unified Project Structure
@@ -2151,20 +2234,26 @@ firebase hosting:channel:deploy preview-subscription
 // public/js/config/environment.js
 const ENV = {
   development: {
-    firebaseConfig: { /* dev config */ },
+    firebaseConfig: {
+      /* dev config */
+    },
     stripePublicKey: 'pk_test_...',
-    analyticsEnabled: false
+    analyticsEnabled: false,
   },
   staging: {
-    firebaseConfig: { /* staging config */ },
+    firebaseConfig: {
+      /* staging config */
+    },
     stripePublicKey: 'pk_test_...',
-    analyticsEnabled: true
+    analyticsEnabled: true,
   },
   production: {
-    firebaseConfig: { /* prod config */ },
+    firebaseConfig: {
+      /* prod config */
+    },
     stripePublicKey: 'pk_live_...',
-    analyticsEnabled: true
-  }
+    analyticsEnabled: true,
+  },
 };
 
 export const config = ENV[window.location.hostname] || ENV.production;
@@ -2223,22 +2312,22 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
+
     function isValidProduct(product) {
       return product.keys().hasAll(['name', 'price', 'category']) &&
              product.price is int &&
              product.price > 0;
     }
-    
+
     // Rate limiting helper
     function rateLimitWrite() {
       return request.time > resource.data.lastWrite + duration(1, 's');
     }
-    
+
     // Apply rules
     match /users/{userId} {
       allow read: if isOwner(userId);
@@ -2253,7 +2342,7 @@ service cloud.firestore {
 ```javascript
 // public/js/performance.js
 // 1. Lazy loading images
-const imageObserver = new IntersectionObserver((entries) => {
+const imageObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       const img = entry.target;
@@ -2274,16 +2363,17 @@ if ('serviceWorker' in navigator) {
 
 // 3. Firestore query optimization
 async function getProductsPaginated(lastDoc = null, limit = 12) {
-  let query = firebase.firestore()
+  let query = firebase
+    .firestore()
     .collection('products')
     .where('isActive', '==', true)
     .orderBy('createdAt', 'desc')
     .limit(limit);
-    
+
   if (lastDoc) {
     query = query.startAfter(lastDoc);
   }
-  
+
   return query.get();
 }
 ```
@@ -2328,20 +2418,20 @@ import { mockFirestore } from 'firebase-functions-test';
 
 describe('OrderService', () => {
   let orderService: OrderService;
-  
+
   beforeEach(() => {
     orderService = new OrderService();
   });
-  
+
   test('calculateOrderTotals includes tax and shipping', async () => {
     const items = [{
       productId: 'tea123',
       quantity: 2,
       price: 2499
     }];
-    
+
     const result = await orderService.calculateTotals(items, 'OR');
-    
+
     expect(result.subtotal).toBe(4998);
     expect(result.tax).toBeGreaterThan(0);
     expect(result.shipping).toBe(599);
@@ -2359,20 +2449,26 @@ describe('Checkout Flow', () => {
     // Start emulators
     await firebase.initializeTestApp({
       projectId: 'test-project',
-      auth: { uid: 'test-user' }
+      auth: { uid: 'test-user' },
     });
   });
-  
+
   it('completes purchase successfully', async () => {
     // Add to cart
-    await firebase.firestore().collection('carts').doc('test-user').set({
-      items: [{ productId: 'tea123', quantity: 1 }]
-    });
-    
+    await firebase
+      .firestore()
+      .collection('carts')
+      .doc('test-user')
+      .set({
+        items: [{ productId: 'tea123', quantity: 1 }],
+      });
+
     // Create payment intent
-    const createIntent = firebase.functions().httpsCallable('stripeCreateIntent');
+    const createIntent = firebase
+      .functions()
+      .httpsCallable('stripeCreateIntent');
     const result = await createIntent({ shippingAddress: mockAddress });
-    
+
     expect(result.data).to.have.property('clientSecret');
     expect(result.data).to.have.property('orderId');
   });
@@ -2385,6 +2481,7 @@ describe('Checkout Flow', () => {
 ## Pre-Deploy Testing Checklist
 
 ### Critical Paths
+
 - [ ] User registration with email
 - [ ] Product browsing and filtering
 - [ ] Add to cart (logged in)
@@ -2395,6 +2492,7 @@ describe('Checkout Flow', () => {
 - [ ] Admin order management
 
 ### Cross-Browser Testing
+
 - [ ] Chrome (latest)
 - [ ] Safari (latest)
 - [ ] Firefox (latest)
@@ -2402,6 +2500,7 @@ describe('Checkout Flow', () => {
 - [ ] Chrome Mobile (Android)
 
 ### Performance Testing
+
 - [ ] Page load < 3s on 3G
 - [ ] Time to Interactive < 5s
 - [ ] No console errors
@@ -2415,12 +2514,12 @@ describe('Checkout Flow', () => {
 ```javascript
 // Use ES6+ features
 // ✓ Good
-const calculateTotal = (items) => {
+const calculateTotal = items => {
   return items.reduce((sum, item) => sum + item.price, 0);
 };
 
 // ✗ Avoid
-var calculateTotal = function(items) {
+var calculateTotal = function (items) {
   var sum = 0;
   for (var i = 0; i < items.length; i++) {
     sum += items[i].price;
@@ -2441,7 +2540,8 @@ async function loadProducts() {
 
 // ✗ Avoid
 function loadProducts() {
-  firebaseService.getProducts()
+  firebaseService
+    .getProducts()
     .then(products => displayProducts(products))
     .catch(error => showError(error));
 }
@@ -2480,37 +2580,37 @@ async function addToCart(productId, quantity) {
 class ErrorHandler {
   static handle(error, context = '') {
     console.error(`Error in ${context}:`, error);
-    
+
     // User-friendly messages
     const userMessage = this.getUserMessage(error);
     this.showNotification(userMessage, 'error');
-    
+
     // Track in analytics
     analytics.trackEvent('error', {
       message: error.message,
       context,
-      stack: error.stack
+      stack: error.stack,
     });
   }
-  
+
   static getUserMessage(error) {
     const errorMap = {
       'auth/user-not-found': 'No account found with this email',
       'auth/wrong-password': 'Incorrect password',
       'insufficient-inventory': 'Sorry, not enough items in stock',
-      'payment-failed': 'Payment failed. Please try again.'
+      'payment-failed': 'Payment failed. Please try again.',
     };
-    
+
     return errorMap[error.code] || 'Something went wrong. Please try again.';
   }
-  
+
   static showNotification(message, type = 'info') {
     // Show toast notification
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
     document.body.appendChild(toast);
-    
+
     setTimeout(() => toast.remove(), 5000);
   }
 }
@@ -2558,16 +2658,13 @@ export const processOrder = functions.https.onCall(async (data, context) => {
     if (!data.items || !Array.isArray(data.items)) {
       throw new ValidationError('Invalid order items');
     }
-    
+
     // Process order...
   } catch (error) {
     if (error instanceof AppError) {
-      throw new functions.https.HttpsError(
-        error.code,
-        error.message
-      );
+      throw new functions.https.HttpsError(error.code, error.message);
     }
-    
+
     // Log unexpected errors
     console.error('Unexpected error:', error);
     throw new functions.https.HttpsError(
@@ -2591,28 +2688,32 @@ const Analytics = {
     gtag('event', 'view_item', {
       currency: 'USD',
       value: product.price / 100,
-      items: [{
-        item_id: product.productId,
-        item_name: product.name,
-        item_category: product.category,
-        price: product.price / 100,
-        quantity: 1
-      }]
+      items: [
+        {
+          item_id: product.productId,
+          item_name: product.name,
+          item_category: product.category,
+          price: product.price / 100,
+          quantity: 1,
+        },
+      ],
     });
   },
-  
+
   trackAddToCart(product, quantity) {
     gtag('event', 'add_to_cart', {
       currency: 'USD',
       value: (product.price * quantity) / 100,
-      items: [{
-        item_id: product.productId,
-        item_name: product.name,
-        quantity: quantity
-      }]
+      items: [
+        {
+          item_id: product.productId,
+          item_name: product.name,
+          quantity: quantity,
+        },
+      ],
     });
   },
-  
+
   trackPurchase(order) {
     gtag('event', 'purchase', {
       transaction_id: order.orderId,
@@ -2624,18 +2725,18 @@ const Analytics = {
         item_id: item.productId,
         item_name: item.productName,
         price: item.price / 100,
-        quantity: item.quantity
-      }))
+        quantity: item.quantity,
+      })),
     });
   },
-  
+
   // Conversion funnel tracking
   trackCheckoutStep(step, additionalData = {}) {
     gtag('event', 'checkout_progress', {
       checkout_step: step,
-      ...additionalData
+      ...additionalData,
     });
-  }
+  },
 };
 ```
 
@@ -2650,7 +2751,7 @@ const perf = firebase.performance();
 async function measureProductLoad() {
   const trace = perf.trace('load_products');
   trace.start();
-  
+
   try {
     const products = await loadProducts();
     trace.putMetric('product_count', products.length);
@@ -2669,7 +2770,7 @@ function sendToAnalytics(metric) {
     value: Math.round(metric.value),
     event_category: 'Web Vitals',
     event_label: metric.id,
-    non_interaction: true
+    non_interaction: true,
   });
 }
 
@@ -2685,35 +2786,38 @@ getLCP(sendToAnalytics);
 async function loadDashboardMetrics() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   // Real-time order count
-  const ordersToday = await firebase.firestore()
+  const ordersToday = await firebase
+    .firestore()
     .collection('orders')
     .where('createdAt', '>=', today)
     .get();
-    
+
   // Revenue calculation
   const revenue = ordersToday.docs.reduce((sum, doc) => {
     return sum + doc.data().total;
   }, 0);
-  
+
   // Conversion funnel
-  const sessions = await firebase.firestore()
+  const sessions = await firebase
+    .firestore()
     .collection('analytics')
     .where('eventType', '==', 'session_start')
     .where('createdAt', '>=', today)
     .get();
-    
-  const checkouts = await firebase.firestore()
+
+  const checkouts = await firebase
+    .firestore()
     .collection('analytics')
     .where('eventType', '==', 'checkout_start')
     .where('createdAt', '>=', today)
     .get();
-    
+
   return {
     ordersToday: ordersToday.size,
     revenueToday: revenue / 100,
-    conversionRate: (ordersToday.size / sessions.size * 100).toFixed(2)
+    conversionRate: ((ordersToday.size / sessions.size) * 100).toFixed(2),
   };
 }
 ```
@@ -2725,19 +2829,20 @@ async function loadDashboardMetrics() {
 exports.monitorInventory = functions.pubsub
   .schedule('every 1 hours')
   .onRun(async () => {
-    const lowStockProducts = await db.collection('products')
+    const lowStockProducts = await db
+      .collection('products')
       .where('inventory', '<', 10)
       .where('isActive', '==', true)
       .get();
-      
+
     if (!lowStockProducts.empty) {
       // Send alert email
       await sendAdminEmail({
         subject: 'Low Inventory Alert',
         products: lowStockProducts.docs.map(doc => ({
           name: doc.data().name,
-          inventory: doc.data().inventory
-        }))
+          inventory: doc.data().inventory,
+        })),
       });
     }
   });

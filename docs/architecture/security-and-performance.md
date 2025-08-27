@@ -11,22 +11,22 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
+
     function isValidProduct(product) {
       return product.keys().hasAll(['name', 'price', 'category']) &&
              product.price is int &&
              product.price > 0;
     }
-    
+
     // Rate limiting helper
     function rateLimitWrite() {
       return request.time > resource.data.lastWrite + duration(1, 's');
     }
-    
+
     // Apply rules
     match /users/{userId} {
       allow read: if isOwner(userId);
@@ -41,7 +41,7 @@ service cloud.firestore {
 ```javascript
 // public/js/performance.js
 // 1. Lazy loading images
-const imageObserver = new IntersectionObserver((entries) => {
+const imageObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       const img = entry.target;
@@ -62,16 +62,17 @@ if ('serviceWorker' in navigator) {
 
 // 3. Firestore query optimization
 async function getProductsPaginated(lastDoc = null, limit = 12) {
-  let query = firebase.firestore()
+  let query = firebase
+    .firestore()
     .collection('products')
     .where('isActive', '==', true)
     .orderBy('createdAt', 'desc')
     .limit(limit);
-    
+
   if (lastDoc) {
     query = query.startAfter(lastDoc);
   }
-  
+
   return query.get();
 }
 ```

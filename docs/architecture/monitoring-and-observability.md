@@ -11,28 +11,32 @@ const Analytics = {
     gtag('event', 'view_item', {
       currency: 'USD',
       value: product.price / 100,
-      items: [{
-        item_id: product.productId,
-        item_name: product.name,
-        item_category: product.category,
-        price: product.price / 100,
-        quantity: 1
-      }]
+      items: [
+        {
+          item_id: product.productId,
+          item_name: product.name,
+          item_category: product.category,
+          price: product.price / 100,
+          quantity: 1,
+        },
+      ],
     });
   },
-  
+
   trackAddToCart(product, quantity) {
     gtag('event', 'add_to_cart', {
       currency: 'USD',
       value: (product.price * quantity) / 100,
-      items: [{
-        item_id: product.productId,
-        item_name: product.name,
-        quantity: quantity
-      }]
+      items: [
+        {
+          item_id: product.productId,
+          item_name: product.name,
+          quantity: quantity,
+        },
+      ],
     });
   },
-  
+
   trackPurchase(order) {
     gtag('event', 'purchase', {
       transaction_id: order.orderId,
@@ -44,18 +48,18 @@ const Analytics = {
         item_id: item.productId,
         item_name: item.productName,
         price: item.price / 100,
-        quantity: item.quantity
-      }))
+        quantity: item.quantity,
+      })),
     });
   },
-  
+
   // Conversion funnel tracking
   trackCheckoutStep(step, additionalData = {}) {
     gtag('event', 'checkout_progress', {
       checkout_step: step,
-      ...additionalData
+      ...additionalData,
     });
-  }
+  },
 };
 ```
 
@@ -70,7 +74,7 @@ const perf = firebase.performance();
 async function measureProductLoad() {
   const trace = perf.trace('load_products');
   trace.start();
-  
+
   try {
     const products = await loadProducts();
     trace.putMetric('product_count', products.length);
@@ -89,7 +93,7 @@ function sendToAnalytics(metric) {
     value: Math.round(metric.value),
     event_category: 'Web Vitals',
     event_label: metric.id,
-    non_interaction: true
+    non_interaction: true,
   });
 }
 
@@ -105,35 +109,38 @@ getLCP(sendToAnalytics);
 async function loadDashboardMetrics() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   // Real-time order count
-  const ordersToday = await firebase.firestore()
+  const ordersToday = await firebase
+    .firestore()
     .collection('orders')
     .where('createdAt', '>=', today)
     .get();
-    
+
   // Revenue calculation
   const revenue = ordersToday.docs.reduce((sum, doc) => {
     return sum + doc.data().total;
   }, 0);
-  
+
   // Conversion funnel
-  const sessions = await firebase.firestore()
+  const sessions = await firebase
+    .firestore()
     .collection('analytics')
     .where('eventType', '==', 'session_start')
     .where('createdAt', '>=', today)
     .get();
-    
-  const checkouts = await firebase.firestore()
+
+  const checkouts = await firebase
+    .firestore()
     .collection('analytics')
     .where('eventType', '==', 'checkout_start')
     .where('createdAt', '>=', today)
     .get();
-    
+
   return {
     ordersToday: ordersToday.size,
     revenueToday: revenue / 100,
-    conversionRate: (ordersToday.size / sessions.size * 100).toFixed(2)
+    conversionRate: ((ordersToday.size / sessions.size) * 100).toFixed(2),
   };
 }
 ```
@@ -145,19 +152,20 @@ async function loadDashboardMetrics() {
 exports.monitorInventory = functions.pubsub
   .schedule('every 1 hours')
   .onRun(async () => {
-    const lowStockProducts = await db.collection('products')
+    const lowStockProducts = await db
+      .collection('products')
       .where('inventory', '<', 10)
       .where('isActive', '==', true)
       .get();
-      
+
     if (!lowStockProducts.empty) {
       // Send alert email
       await sendAdminEmail({
         subject: 'Low Inventory Alert',
         products: lowStockProducts.docs.map(doc => ({
           name: doc.data().name,
-          inventory: doc.data().inventory
-        }))
+          inventory: doc.data().inventory,
+        })),
       });
     }
   });

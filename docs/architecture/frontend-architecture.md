@@ -36,7 +36,7 @@ class ProductCard extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
   }
-  
+
   connectedCallback() {
     const product = JSON.parse(this.getAttribute('data-product'));
     this.shadowRoot.innerHTML = `
@@ -56,17 +56,20 @@ class ProductCard extends HTMLElement {
         <button id="add-to-cart">Add to Cart</button>
       </div>
     `;
-    
-    this.shadowRoot.getElementById('add-to-cart')
+
+    this.shadowRoot
+      .getElementById('add-to-cart')
       .addEventListener('click', () => this.addToCart(product));
   }
-  
+
   async addToCart(product) {
     // Dispatch custom event that cart.js listens for
-    this.dispatchEvent(new CustomEvent('add-to-cart', {
-      detail: product,
-      bubbles: true
-    }));
+    this.dispatchEvent(
+      new CustomEvent('add-to-cart', {
+        detail: product,
+        bubbles: true,
+      })
+    );
   }
 }
 
@@ -86,14 +89,17 @@ document.addEventListener('alpine:init', () => {
     email: null,
     displayName: null,
     role: 'customer',
-    
+
     async init() {
-      firebase.auth().onAuthStateChanged(async (user) => {
+      firebase.auth().onAuthStateChanged(async user => {
         if (user) {
-          const userDoc = await firebase.firestore()
-            .collection('users').doc(user.uid).get();
+          const userDoc = await firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+            .get();
           const userData = userDoc.data();
-          
+
           this.isAuthenticated = true;
           this.uid = user.uid;
           this.email = user.email;
@@ -104,20 +110,20 @@ document.addEventListener('alpine:init', () => {
         }
       });
     },
-    
+
     reset() {
       this.isAuthenticated = false;
       this.uid = null;
       this.email = null;
       this.displayName = null;
       this.role = 'customer';
-    }
+    },
   });
-  
+
   Alpine.store('cart', {
     items: [],
     total: 0,
-    
+
     init() {
       // Subscribe to cart changes if authenticated
       Alpine.effect(() => {
@@ -129,10 +135,12 @@ document.addEventListener('alpine:init', () => {
         }
       });
     },
-    
+
     subscribeToCart(userId) {
-      return firebase.firestore()
-        .collection('carts').doc(userId)
+      return firebase
+        .firestore()
+        .collection('carts')
+        .doc(userId)
         .onSnapshot(doc => {
           if (doc.exists) {
             this.items = doc.data().items || [];
@@ -140,16 +148,16 @@ document.addEventListener('alpine:init', () => {
           }
         });
     },
-    
+
     loadGuestCart() {
       const saved = localStorage.getItem('guest-cart');
       this.items = saved ? JSON.parse(saved) : [];
       this.calculateTotal();
     },
-    
+
     calculateTotal() {
       // Calculate from items
-    }
+    },
   });
 });
 ```
@@ -186,25 +194,29 @@ document.addEventListener('alpine:init', () => {
 // public/js/auth-guard.js
 class AuthGuard {
   static async checkAccess(requiredRole = 'customer') {
-    return new Promise((resolve) => {
-      firebase.auth().onAuthStateChanged(async (user) => {
+    return new Promise(resolve => {
+      firebase.auth().onAuthStateChanged(async user => {
         if (!user) {
-          window.location.href = '/login.html?redirect=' + 
+          window.location.href =
+            '/login.html?redirect=' +
             encodeURIComponent(window.location.pathname);
           return;
         }
-        
+
         if (requiredRole === 'admin') {
-          const userDoc = await firebase.firestore()
-            .collection('users').doc(user.uid).get();
+          const userDoc = await firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+            .get();
           const userData = userDoc.data();
-          
+
           if (userData.role !== 'admin') {
             window.location.href = '/';
             return;
           }
         }
-        
+
         resolve(user);
       });
     });
@@ -231,23 +243,22 @@ class FirebaseService {
     this.functions = firebase.functions();
     this.storage = firebase.storage();
   }
-  
+
   // Products
   async getProducts(category = null) {
-    let query = this.db.collection('products')
-      .where('isActive', '==', true);
-      
+    let query = this.db.collection('products').where('isActive', '==', true);
+
     if (category) {
       query = query.where('category', '==', category);
     }
-    
+
     const snapshot = await query.get();
     return snapshot.docs.map(doc => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
   }
-  
+
   // Cart operations
   async addToCart(productId, quantity) {
     const user = this.auth.currentUser;
@@ -256,22 +267,24 @@ class FirebaseService {
       CartService.addToGuestCart(productId, quantity);
       return;
     }
-    
+
     const cartRef = this.db.collection('carts').doc(user.uid);
-    return cartRef.set({
-      items: firebase.firestore.FieldValue.arrayUnion({
-        productId,
-        quantity,
-        addedAt: firebase.firestore.Timestamp.now()
-      }),
-      updatedAt: firebase.firestore.Timestamp.now()
-    }, { merge: true });
+    return cartRef.set(
+      {
+        items: firebase.firestore.FieldValue.arrayUnion({
+          productId,
+          quantity,
+          addedAt: firebase.firestore.Timestamp.now(),
+        }),
+        updatedAt: firebase.firestore.Timestamp.now(),
+      },
+      { merge: true }
+    );
   }
-  
+
   // Checkout
   async createPaymentIntent(shippingAddress) {
-    const createIntent = this.functions
-      .httpsCallable('stripeCreateIntent');
+    const createIntent = this.functions.httpsCallable('stripeCreateIntent');
     return createIntent({ shippingAddress });
   }
 }
@@ -289,7 +302,7 @@ class AnalyticsService {
     this.sessionId = this.getOrCreateSessionId();
     this.db = firebase.firestore();
   }
-  
+
   getOrCreateSessionId() {
     let sessionId = sessionStorage.getItem('sessionId');
     if (!sessionId) {
@@ -298,10 +311,10 @@ class AnalyticsService {
     }
     return sessionId;
   }
-  
+
   async trackEvent(eventType, eventData = {}) {
     const user = firebase.auth().currentUser;
-    
+
     const event = {
       eventType,
       eventData,
@@ -310,36 +323,36 @@ class AnalyticsService {
       deviceInfo: {
         userAgent: navigator.userAgent,
         screenSize: `${screen.width}x${screen.height}`,
-        referrer: document.referrer
+        referrer: document.referrer,
       },
-      timestamp: firebase.firestore.Timestamp.now()
+      timestamp: firebase.firestore.Timestamp.now(),
     };
-    
+
     // Send to Firebase Analytics
     if (window.gtag) {
       gtag('event', eventType, eventData);
     }
-    
+
     // Also store in Firestore for custom analysis
     return this.db.collection('analytics').add(event);
   }
-  
+
   trackPageView() {
     this.trackEvent('page_view', {
       page: window.location.pathname,
-      title: document.title
+      title: document.title,
     });
   }
-  
+
   trackAddToCart(product, quantity) {
     this.trackEvent('add_to_cart', {
       productId: product.productId,
       productName: product.name,
       quantity,
-      value: product.price * quantity / 100
+      value: (product.price * quantity) / 100,
     });
   }
-  
+
   trackPurchase(order) {
     this.trackEvent('purchase', {
       orderId: order.orderId,
@@ -349,8 +362,8 @@ class AnalyticsService {
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
-        price: item.price / 100
-      }))
+        price: item.price / 100,
+      })),
     });
   }
 }

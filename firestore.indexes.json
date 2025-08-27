@@ -15,7 +15,7 @@
       ]
     },
     {
-      "collectionGroup": "products", 
+      "collectionGroup": "products",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -30,7 +30,7 @@
     },
     {
       "collectionGroup": "certifications",
-      "queryScope": "COLLECTION", 
+      "queryScope": "COLLECTION",
       "fields": [
         {
           "fieldPath": "type",

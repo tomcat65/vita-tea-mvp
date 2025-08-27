@@ -3,7 +3,7 @@
 ## Functional Requirements
 
 1. **FR1**: Product catalog displays 3 sample trio products with ingredient information, health benefits, brewing instructions, and high-quality imagery
-2. **FR2**: Firebase Authentication enables customer account creation, login, and profile management with order history tracking  
+2. **FR2**: Firebase Authentication enables customer account creation, login, and profile management with order history tracking
 3. **FR3**: Shopping cart functionality with add-to-cart, cart persistence, and real-time price calculations
 4. **FR4**: Secure checkout process integrated with Stripe supporting credit/debit cards and digital wallets (Apple Pay, Google Pay)
 5. **FR5**: Real-time inventory management tracks sample trio quantities with low-stock alerts and automatic updates

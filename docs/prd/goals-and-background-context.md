@@ -1,8 +1,9 @@
 # Goals and Background Context
 
 ## Goals
+
 - Launch Firebase-powered ecommerce platform for premium wellness tea sample trios targeting Greater Houston/Katy market
-- Validate market demand with 50+ orders month 1, 200+ orders within 3 months  
+- Validate market demand with 50+ orders month 1, 200+ orders within 3 months
 - Build customer email list and gather product preference data for full product line expansion
 - Establish premium functional wellness brand positioning with educational approach
 - Create scalable platform foundation supporting subscription services, AI personalization, and multi-cultural agent system
@@ -15,6 +16,7 @@ Vita-Tea addresses the growing demand in the $23B+ wellness market by combining 
 The Firebase-powered platform strategy enables long-term competitive advantage through custom AI agent integration, advanced personalization capabilities, and seamless scaling compared to traditional ecommerce platforms. This technical foundation supports the post-MVP vision of multi-cultural tea expert agents, subscription services, and comprehensive wellness ecosystem development.
 
 ## Change Log
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2025-08-26 | v1.0 | Initial PRD creation from Project Brief | John (PM) |
+
+| Date       | Version | Description                             | Author    |
+| ---------- | ------- | --------------------------------------- | --------- |
+| 2025-08-26 | v1.0    | Initial PRD creation from Project Brief | John (PM) |
