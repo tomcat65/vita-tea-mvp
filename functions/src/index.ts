@@ -1,10 +1,11 @@
+// index.ts
 import { onRequest } from 'firebase-functions/v2/https';
-import { logger } from 'firebase-functions';
+import { beforeUserCreated } from 'firebase-functions/v2/identity';
+import { info, error, warn } from 'firebase-functions/logger';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import * as functions from 'firebase-functions';
-import { Request, Response } from 'firebase-functions';
+import type { Request, Response } from 'express';
 
 // Initialize Firebase Admin
 initializeApp();
@@ -24,15 +25,12 @@ if (process.env.NODE_ENV === 'development') {
   ALLOWED_ORIGINS.push('http://localhost:3000', 'http://localhost:5000', 'http://localhost:5173');
 }
 
-/**
- * Configure CORS headers for the response
- */
+/** Configure CORS headers for the response */
 function setCorsHeaders(req: Request, res: Response) {
   const origin = req.headers.origin;
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.set('Access-Control-Allow-Origin', origin);
   } else if (!origin && process.env.NODE_ENV === 'development') {
-    // Allow no-origin requests in development (e.g., Postman)
     res.set('Access-Control-Allow-Origin', '*');
   }
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -40,20 +38,12 @@ function setCorsHeaders(req: Request, res: Response) {
   res.set('Access-Control-Max-Age', '3600');
 }
 
-/**
- * Health check endpoint for Cloud Functions
- */
+/** Health check */
 export const healthCheck = onRequest(async (req, res) => {
-  logger.info('Health check requested', { structuredData: true });
+  info('Health check requested', { structuredData: true });
 
-  // Handle CORS
   setCorsHeaders(req, res);
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
+  if (req.method === 'OPTIONS') { res.status(204).send(''); return; }
 
   res.status(200).json({
     status: 'healthy',
@@ -62,122 +52,79 @@ export const healthCheck = onRequest(async (req, res) => {
   });
 });
 
-/**
- * Configuration endpoint to securely serve Firebase config to client
- * Note: Firebase API keys are designed to be public for client apps
- */
+/** Public config */
 export const config = onRequest(async (req, res) => {
-  logger.info('Config requested', { structuredData: true });
+  info('Config requested', { structuredData: true });
 
-  // Handle CORS
   setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') { res.status(204).send(''); return; }
 
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-
-  // Set caching headers
-  res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
+  res.set('Cache-Control', 'public, max-age=300');
 
   try {
-    // These Firebase config values are safe to expose publicly
     const firebaseConfig = {
-      apiKey:
-        process.env.FIREBASE_API_KEY ||
-        'AIzaSyBh4BNjpxfY_dgt3FojKFMD7KEIisf1iWg',
-      authDomain:
-        process.env.FIREBASE_AUTH_DOMAIN || 'vida-tea.firebaseapp.com',
+      apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyBh4BNjpxfY_dgt3FojKFMD7KEIisf1iWg',
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'vida-tea.firebaseapp.com',
       projectId: process.env.FIREBASE_PROJECT_ID || 'vida-tea',
-      storageBucket:
-        process.env.FIREBASE_STORAGE_BUCKET || 'vida-tea.firebasestorage.app',
-      messagingSenderId:
-        process.env.FIREBASE_MESSAGING_SENDER_ID || '669969532716',
-      appId:
-        process.env.FIREBASE_APP_ID ||
-        '1:669969532716:web:02d938f0e13f73575f0e89',
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'vida-tea.firebasestorage.app',
+      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '669969532716',
+      appId: process.env.FIREBASE_APP_ID || '1:669969532716:web:02d938f0e13f73575f0e89',
       measurementId: process.env.FIREBASE_MEASUREMENT_ID || 'G-SS8PB0TT8D',
     };
-
     res.status(200).json(firebaseConfig);
-  } catch (error) {
-    logger.error('Error serving config', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+      } catch (err) {
+      error('Error serving config', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
+  /** Analytics tracking */
+  export const trackAnalytics = onRequest(async (req, res) => {
+    info('Analytics event received', { method: req.method });
 
-/**
- * Analytics tracking endpoint
- * Receives analytics events from the client and writes them to Firestore
- */
-export const trackAnalytics = onRequest(async (req, res) => {
-  logger.info('Analytics event received', { method: req.method });
-  
-  // Handle CORS
   setCorsHeaders(req, res);
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-  
-  // Only accept POST requests
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
-  
+  if (req.method === 'OPTIONS') { res.status(204).send(''); return; }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+
   try {
-    // Get the events from request body
     const { events } = req.body;
-    
     if (!events || !Array.isArray(events)) {
       res.status(400).json({ error: 'Invalid request: events array required' });
       return;
     }
-    
-    // Validate and write each event
-    const promises = events.map(async (event) => {
+
+    const writes = events.map(async (event: any) => {
       if (!event.eventName || !event.eventData) {
-        logger.warn('Invalid event structure', event);
+        warn('Invalid event structure', event);
         return;
       }
-      
-      // Add server timestamp and write to Firestore
       const analyticsDoc = {
         eventName: event.eventName,
         eventData: event.eventData,
         serverTimestamp: FieldValue.serverTimestamp(),
-        receivedAt: new Date()
+        receivedAt: new Date(),
       };
-      
       return db.collection('analytics').add(analyticsDoc);
     });
-    
-    await Promise.all(promises);
-    
-    logger.info('Analytics events saved', { count: events.length });
-    res.status(200).json({ 
-      success: true, 
-      message: `${events.length} events tracked successfully` 
-    });
-    
-  } catch (error) {
-    logger.error('Error tracking analytics', error);
+
+    await Promise.all(writes);
+    info('Analytics events saved', { count: events.length });
+    res.status(200).json({ success: true, message: `${events.length} events tracked successfully` });
+  } catch (err) {
+    error('Error tracking analytics', err);
     res.status(500).json({ error: 'Failed to track analytics events' });
   }
 });
 
-/**
- * onCreate trigger for new user accounts
- * Creates user profile document when a new user signs up
- */
-export const onUserCreate = functions.auth.user().onCreate(async (user) => {
-  logger.info('New user created', { uid: user.uid, email: user.email });
-  
-  // Create user profile document
+/** ✅ Auth trigger for new user accounts */
+export const onUserCreate = beforeUserCreated(async (event) => {
+  const user = event.data;
+  if (!user) {
+    error('No user data in event');
+    return;
+  }
+  info('New user created', { uid: user.uid, email: user.email });
+
   const userProfile = {
     uid: user.uid,
     email: user.email || '',
@@ -186,77 +133,52 @@ export const onUserCreate = functions.auth.user().onCreate(async (user) => {
     createdAt: new Date(),
     updatedAt: new Date(),
     lastLoginAt: new Date(),
-    preferences: {
-      marketingEmails: true,
-      orderNotifications: true
-    },
-    emailVerified: user.emailVerified || false
+    preferences: { marketingEmails: true, orderNotifications: true },
+    emailVerified: user.emailVerified || false,
   };
-  
+
   try {
     await db.collection('users').doc(user.uid).set(userProfile);
-    logger.info('User profile created successfully', { uid: user.uid });
-  } catch (error) {
-    logger.error('Error creating user profile', error);
+    info('User profile created successfully', { uid: user.uid });
+  } catch (err) {
+    error('Error creating user profile', err);
   }
 });
 
-/**
- * Set custom claims for admin users
- * This would be called by a secure admin interface
- */
+/** Set custom claims for admin users */
 export const setAdminRole = onRequest(async (req, res) => {
-  logger.info('Admin role request', { method: req.method });
-  
-  // Handle CORS
+  info('Admin role request', { method: req.method });
+
   setCorsHeaders(req, res);
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-  
-  // This should only be accessible by existing admins
-  // For initial setup, you might need to run this via Firebase Admin SDK directly
-  
-  // Verify the request is authenticated
+  if (req.method === 'OPTIONS') { res.status(204).send(''); return; }
+
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
-  
+
   const idToken = authHeader.split('Bearer ')[1];
-  
+
   try {
-    // Verify the token
     const decodedToken = await auth.verifyIdToken(idToken);
-    
-    // Check if the requester is already an admin
     if (!decodedToken.admin) {
       res.status(403).json({ error: 'Forbidden: Only admins can set admin roles' });
       return;
     }
-    
-    const { uid } = req.body;
+
+    const { uid } = req.body as { uid?: string };
     if (!uid) {
       res.status(400).json({ error: 'Missing uid parameter' });
       return;
     }
-    
-    // Set custom claims
+
     await auth.setCustomUserClaims(uid, { admin: true });
-    
-    // Update user document
-    await db.collection('users').doc(uid).update({
-      role: 'admin',
-      updatedAt: new Date()
-    });
-    
+    await db.collection('users').doc(uid).update({ role: 'admin', updatedAt: new Date() });
+
     res.status(200).json({ success: true, message: 'Admin role granted' });
-  } catch (error) {
-    logger.error('Error setting admin role', error);
+  } catch (err) {
+    error('Error setting admin role', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
