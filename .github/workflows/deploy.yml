@@ -2,9 +2,18 @@ name: Deploy to Firebase
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
+
+concurrency:
+  group: firebase-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
@@ -13,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (Node 20 required by Firebase CLI)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -27,14 +36,16 @@ jobs:
 
       - name: Build Functions
         run: |
-          cd functions  
+          cd functions
           npm run build
 
       - name: Validate Firebase configuration
         run: |
           test -f firebase.json
-          test -f firestore.rules
           test -f public/index.html
+          # Keep next lines only if you use them and they're referenced in firebase.json
+          test -f firestore.rules
+          test -f storage.rules
 
   deploy-preview:
     needs: build-and-test
@@ -44,21 +55,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (for Firebase CLI)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Deploy Preview
+      - name: Deploy Hosting Preview (PR channel)
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
           projectId: vida-tea
-          # remove target unless you've defined a hosting target in .firebaserc
-          # target: vida-tea
-          expires: 7d
           channelId: pr-${{ github.event.number }}
+          expires: 7d
 
   deploy-production:
     needs: build-and-test
@@ -71,23 +80,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (for Firebase CLI)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Deploy to Firebase (Hosting)
+      - name: Deploy Hosting (live)
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
           projectId: vida-tea
-          # remove target unless you've defined it (see notes below)
-          # target: vida-tea
+          # If you define a hosting target alias in .firebaserc, add "target: <alias>"
 
-      - name: Deploy Functions
+      - name: Deploy Cloud Functions
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only functions --project vida-tea
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
+
