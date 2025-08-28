@@ -102,13 +102,7 @@ jobs:
         run: |
           cd functions
           npm run build
-      - name: Set Artifact Registry cleanup policy (us-central1)
-        uses: w9jds/firebase-action@master
-        with:
-            args: functions:artifacts:setpolicy --location us-central1 --days 3 --project vida-tea
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
-
+      
       - name: Deploy Cloud Functions
         uses: w9jds/firebase-action@master
         with:
