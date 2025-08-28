@@ -1,6 +1,6 @@
 // index.ts
 import { onRequest } from 'firebase-functions/v2/https';
-import { beforeUserCreated } from 'firebase-functions/v2/identity';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { info, error, warn } from 'firebase-functions/logger';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -126,37 +126,17 @@ export const config = onRequest(async (req, res) => {
   }
 });
 
-/** ✅ Auth trigger for new user accounts (v2 blocking function) */
-export const onUserCreate = beforeUserCreated(async (event) => {
-  const user = event.data;
-  if (!user) {
-    error('No user data in event');
+/** ✅ Firestore trigger for new user profiles */
+export const onUserProfileCreated = onDocumentCreated('users/{userId}', async (event) => {
+  const userData = event.data?.data();
+  if (!userData) {
+    error('No user data in document');
     return;
   }
-  info('New user created', { uid: user.uid, email: user.email });
-
-  // Create user profile in Firestore
-  const userProfile = {
-    uid: user.uid,
-    email: user.email || '',
-    displayName: user.displayName || '',
-    role: 'customer',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    lastLoginAt: new Date(),
-    preferences: { marketingEmails: true, orderNotifications: true },
-    emailVerified: user.emailVerified || false,
-  };
-
-  try {
-    await db.collection('users').doc(user.uid).set(userProfile);
-    info('User profile created successfully', { uid: user.uid });
-  } catch (err) {
-    error('Error creating user profile', err);
-  }
-
-  // Return undefined to not block user creation
-  return undefined;
+  info('New user profile created', { uid: event.params.userId, email: userData.email });
+  
+  // Additional processing can be done here
+  // For example, send welcome email, update analytics, etc.
 });
 
 /** Set custom claims for admin users */
