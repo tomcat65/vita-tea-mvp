@@ -1,17 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setAdminRole = exports.onUserProfileCreated = exports.trackAnalytics = exports.config = exports.healthCheck = void 0;
+exports.setAdminRole = exports.createUserProfile = exports.trackAnalytics = exports.config = exports.healthCheck = void 0;
 // index.ts
 const https_1 = require("firebase-functions/v2/https");
-const firestore_1 = require("firebase-functions/v2/firestore");
 const logger_1 = require("firebase-functions/logger");
 const app_1 = require("firebase-admin/app");
 const auth_1 = require("firebase-admin/auth");
-const firestore_2 = require("firebase-admin/firestore");
+const firestore_1 = require("firebase-admin/firestore");
 // Initialize Firebase Admin
 (0, app_1.initializeApp)();
 const auth = (0, auth_1.getAuth)();
-const db = (0, firestore_2.getFirestore)();
+const db = (0, firestore_1.getFirestore)();
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
     'https://vita-tea.com',
@@ -110,7 +109,7 @@ exports.trackAnalytics = (0, https_1.onRequest)(async (req, res) => {
             const analyticsDoc = {
                 eventName: event.eventName,
                 eventData: event.eventData,
-                serverTimestamp: firestore_2.FieldValue.serverTimestamp(),
+                serverTimestamp: firestore_1.FieldValue.serverTimestamp(),
                 receivedAt: new Date(),
             };
             return db.collection('analytics').add(analyticsDoc);
@@ -124,17 +123,53 @@ exports.trackAnalytics = (0, https_1.onRequest)(async (req, res) => {
         res.status(500).json({ error: 'Failed to track analytics events' });
     }
 });
-/** ✅ Firestore trigger for new user profiles */
-exports.onUserProfileCreated = (0, firestore_1.onDocumentCreated)('users/{userId}', async (event) => {
-    var _a;
-    const userData = (_a = event.data) === null || _a === void 0 ? void 0 : _a.data();
-    if (!userData) {
-        (0, logger_1.error)('No user data in document');
+/** ✅ HTTP endpoint to create user profile (called from client after auth) */
+exports.createUserProfile = (0, https_1.onRequest)(async (req, res) => {
+    (0, logger_1.info)('Create user profile requested', { method: req.method });
+    setCorsHeaders(req, res);
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
         return;
     }
-    (0, logger_1.info)('New user profile created', { uid: event.params.userId, email: userData.email });
-    // Additional processing can be done here
-    // For example, send welcome email, update analytics, etc.
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    const authHeader = req.headers.authorization;
+    if (!(authHeader === null || authHeader === void 0 ? void 0 : authHeader.startsWith('Bearer '))) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    const idToken = authHeader.split('Bearer ')[1];
+    try {
+        const decodedToken = await auth.verifyIdToken(idToken);
+        const { uid, email, displayName } = decodedToken;
+        // Check if user profile already exists
+        const existingProfile = await db.collection('users').doc(uid).get();
+        if (existingProfile.exists) {
+            res.status(200).json({ success: true, message: 'User profile already exists' });
+            return;
+        }
+        // Create user profile in Firestore
+        const userProfile = {
+            uid,
+            email: email || '',
+            displayName: displayName || '',
+            role: 'customer',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            lastLoginAt: new Date(),
+            preferences: { marketingEmails: true, orderNotifications: true },
+            emailVerified: decodedToken.email_verified || false,
+        };
+        await db.collection('users').doc(uid).set(userProfile);
+        (0, logger_1.info)('User profile created successfully', { uid });
+        res.status(201).json({ success: true, message: 'User profile created' });
+    }
+    catch (err) {
+        (0, logger_1.error)('Error creating user profile', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 /** Set custom claims for admin users */
 exports.setAdminRole = (0, https_1.onRequest)(async (req, res) => {
