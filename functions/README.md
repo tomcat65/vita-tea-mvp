@@ -61,7 +61,7 @@ npm run deploy
 - `healthCheck` - Health check endpoint
 - `config` - Returns Firebase configuration (for client-side)
 - `trackAnalytics` - Tracks analytics events
-- `onUserCreate` - Creates user profile when new user signs up
+- `createUserProfile` - HTTP endpoint to create user profile (called from client after auth)
 - `setAdminRole` - Sets admin role for users (admin only)
 
 ## 🔐 Security Notes
