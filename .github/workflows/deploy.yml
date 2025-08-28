@@ -103,8 +103,16 @@ jobs:
           cd functions
           npm run build
 
-
-
+      - name: Setup IAM permissions for Functions
+        run: |
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}" > /tmp/gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json
+          gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
+          gcloud config set project vida-tea
+          echo "Attempting to set IAM permissions..."
+          gcloud projects add-iam-policy-binding vida-tea --member=serviceAccount:service-669969532716@gcp-sa-pubsub.iam.gserviceaccount.com --role=roles/iam.serviceAccountTokenCreator || echo "Permission already exists or failed to set"
+          gcloud projects add-iam-policy-binding vida-tea --member=serviceAccount:669969532716-compute@developer.gserviceaccount.com --role=roles/run.invoker || echo "Permission already exists or failed to set"
+          gcloud projects add-iam-policy-binding vida-tea --member=serviceAccount:669969532716-compute@developer.gserviceaccount.com --role=roles/eventarc.eventReceiver || echo "Permission already exists or failed to set"
         
       - name: Deploy Cloud Functions
         uses: w9jds/firebase-action@master
