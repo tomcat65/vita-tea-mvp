@@ -61,14 +61,22 @@ exports.config = (0, https_1.onRequest)(async (req, res) => {
     res.set('Cache-Control', 'public, max-age=300');
     try {
         const firebaseConfig = {
-            apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyBh4BNjpxfY_dgt3FojKFMD7KEIisf1iWg',
-            authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'vida-tea.firebaseapp.com',
-            projectId: process.env.FIREBASE_PROJECT_ID || 'vida-tea',
-            storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'vida-tea.firebasestorage.app',
-            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '669969532716',
-            appId: process.env.FIREBASE_APP_ID || '1:669969532716:web:02d938f0e13f73575f0e89',
-            measurementId: process.env.FIREBASE_MEASUREMENT_ID || 'G-SS8PB0TT8D',
+            apiKey: process.env.FIREBASE_API_KEY,
+            authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+            appId: process.env.FIREBASE_APP_ID,
+            measurementId: process.env.FIREBASE_MEASUREMENT_ID,
         };
+        // Validate that all required config values are present
+        const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+        const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
+        if (missingFields.length > 0) {
+            (0, logger_1.error)('Missing required Firebase config environment variables', { missingFields });
+            res.status(500).json({ error: 'Firebase configuration incomplete' });
+            return;
+        }
         res.status(200).json(firebaseConfig);
     }
     catch (err) {
@@ -116,7 +124,7 @@ exports.trackAnalytics = (0, https_1.onRequest)(async (req, res) => {
         res.status(500).json({ error: 'Failed to track analytics events' });
     }
 });
-/** ✅ Auth trigger for new user accounts */
+/** ✅ Auth trigger for new user accounts (v2 blocking function) */
 exports.onUserCreate = (0, identity_1.beforeUserCreated)(async (event) => {
     const user = event.data;
     if (!user) {
@@ -124,6 +132,7 @@ exports.onUserCreate = (0, identity_1.beforeUserCreated)(async (event) => {
         return;
     }
     (0, logger_1.info)('New user created', { uid: user.uid, email: user.email });
+    // Create user profile in Firestore
     const userProfile = {
         uid: user.uid,
         email: user.email || '',
@@ -142,6 +151,8 @@ exports.onUserCreate = (0, identity_1.beforeUserCreated)(async (event) => {
     catch (err) {
         (0, logger_1.error)('Error creating user profile', err);
     }
+    // Return undefined to not block user creation
+    return undefined;
 });
 /** Set custom claims for admin users */
 exports.setAdminRole = (0, https_1.onRequest)(async (req, res) => {
