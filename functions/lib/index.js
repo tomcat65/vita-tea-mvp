@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setAdminRole = exports.onUserCreate = exports.trackAnalytics = exports.config = exports.healthCheck = void 0;
+exports.setAdminRole = exports.onUserProfileCreated = exports.trackAnalytics = exports.config = exports.healthCheck = void 0;
 // index.ts
 const https_1 = require("firebase-functions/v2/https");
-const identity_1 = require("firebase-functions/v2/identity");
+const firestore_1 = require("firebase-functions/v2/firestore");
 const logger_1 = require("firebase-functions/logger");
 const app_1 = require("firebase-admin/app");
 const auth_1 = require("firebase-admin/auth");
-const firestore_1 = require("firebase-admin/firestore");
+const firestore_2 = require("firebase-admin/firestore");
 // Initialize Firebase Admin
 (0, app_1.initializeApp)();
 const auth = (0, auth_1.getAuth)();
-const db = (0, firestore_1.getFirestore)();
+const db = (0, firestore_2.getFirestore)();
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
     'https://vita-tea.com',
@@ -110,7 +110,7 @@ exports.trackAnalytics = (0, https_1.onRequest)(async (req, res) => {
             const analyticsDoc = {
                 eventName: event.eventName,
                 eventData: event.eventData,
-                serverTimestamp: firestore_1.FieldValue.serverTimestamp(),
+                serverTimestamp: firestore_2.FieldValue.serverTimestamp(),
                 receivedAt: new Date(),
             };
             return db.collection('analytics').add(analyticsDoc);
@@ -124,35 +124,17 @@ exports.trackAnalytics = (0, https_1.onRequest)(async (req, res) => {
         res.status(500).json({ error: 'Failed to track analytics events' });
     }
 });
-/** ✅ Auth trigger for new user accounts (v2 blocking function) */
-exports.onUserCreate = (0, identity_1.beforeUserCreated)(async (event) => {
-    const user = event.data;
-    if (!user) {
-        (0, logger_1.error)('No user data in event');
+/** ✅ Firestore trigger for new user profiles */
+exports.onUserProfileCreated = (0, firestore_1.onDocumentCreated)('users/{userId}', async (event) => {
+    var _a;
+    const userData = (_a = event.data) === null || _a === void 0 ? void 0 : _a.data();
+    if (!userData) {
+        (0, logger_1.error)('No user data in document');
         return;
     }
-    (0, logger_1.info)('New user created', { uid: user.uid, email: user.email });
-    // Create user profile in Firestore
-    const userProfile = {
-        uid: user.uid,
-        email: user.email || '',
-        displayName: user.displayName || '',
-        role: 'customer',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastLoginAt: new Date(),
-        preferences: { marketingEmails: true, orderNotifications: true },
-        emailVerified: user.emailVerified || false,
-    };
-    try {
-        await db.collection('users').doc(user.uid).set(userProfile);
-        (0, logger_1.info)('User profile created successfully', { uid: user.uid });
-    }
-    catch (err) {
-        (0, logger_1.error)('Error creating user profile', err);
-    }
-    // Return undefined to not block user creation
-    return undefined;
+    (0, logger_1.info)('New user profile created', { uid: event.params.userId, email: userData.email });
+    // Additional processing can be done here
+    // For example, send welcome email, update analytics, etc.
 });
 /** Set custom claims for admin users */
 exports.setAdminRole = (0, https_1.onRequest)(async (req, res) => {
