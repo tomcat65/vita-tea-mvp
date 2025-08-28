@@ -105,12 +105,6 @@ jobs:
 
 
 
-      - name: One-time delete old Gen1 onUserCreate
-        uses: w9jds/firebase-action@master
-        with:
-          args: functions:delete onUserCreate --region us-central1 --project vida-tea --force
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
         
       - name: Deploy Cloud Functions
         uses: w9jds/firebase-action@master
