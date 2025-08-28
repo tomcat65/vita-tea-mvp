@@ -2,9 +2,11 @@ name: Deploy to Firebase
 
 on:
   push:
-    branches: [ main, "**" ]   # main + all branches (for previews)
+    branches:
+      - '**'          # all branches
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -19,15 +21,21 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js (Firebase CLI needs ≥20)
+      - name: Setup Node.js (≥20 for firebase-tools)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: functions/package-lock.json
+
+      - name: Validate Firebase config / site files
+        run: |
+          test -f firebase.json
+          test -f public/index.html
+          test -f firestore.rules
+          test -f storage.rules
 
       - name: Install Functions deps
         run: |
@@ -39,29 +47,17 @@ jobs:
           cd functions
           npm run build
 
-      - name: Validate Firebase config / site files
-        run: |
-          test -f firebase.json
-          test -f public/index.html
-          test -f firestore.rules
-          test -f storage.rules
-
-  # PREVIEW deploys (PRs and any non-main branch push)
+  # PREVIEW deploys for PRs and any non-main branch push
   deploy-preview:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/main'
+    if: github.ref != 'refs/heads/main' || github.event_name == 'pull_request'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+      # Compute a guaranteed channel id
       - name: Compute preview channel id
-        id: compute
+        id: ch
         shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -69,18 +65,17 @@ jobs:
           else
             echo "channel=preview-${{ github.sha }}" >> "$GITHUB_OUTPUT"
           fi
-          echo "Using channel: $(cat $GITHUB_OUTPUT)"
+          echo "Channel: $(cat $GITHUB_OUTPUT)"
 
+      # Use firebase CLI via w9jds action (passes our channel explicitly)
       - name: Deploy Hosting Preview
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: w9jds/firebase-action@master
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
-          projectId: vida-tea
-          channelId: ${{ steps.compute.outputs.channel }}   # <-- ALWAYS set
-          expires: 7d
+          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --project vida-tea --expires 7d
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
-  # LIVE deploys on main
+  # LIVE deploy on main
   deploy-production:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -89,28 +84,20 @@ jobs:
       name: production
       url: https://vida-tea.web.app
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - uses: actions/checkout@v4
 
       - name: Deploy Hosting (live)
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: w9jds/firebase-action@master
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
-          projectId: vida-tea
-          # (no channelId here → deploys to LIVE)
+          args: deploy --only hosting --project vida-tea
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
-      # New runner → install & build functions again before deploy
+      # New runner => install & build functions again before deploy
       - name: Install Functions deps
         run: |
           cd functions
           npm ci
-
       - name: Build Functions
         run: |
           cd functions
@@ -122,6 +109,3 @@ jobs:
           args: deploy --only functions --project vida-tea
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
-
-
-
