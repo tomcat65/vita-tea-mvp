@@ -139,6 +139,55 @@ export const onUserProfileCreated = onDocumentCreated('users/{userId}', async (e
   // For example, send welcome email, update analytics, etc.
 });
 
+/** ✅ HTTP endpoint to create user profile (called from client after auth) */
+export const createUserProfile = onRequest(async (req, res) => {
+  info('Create user profile requested', { method: req.method });
+
+  setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') { res.status(204).send(''); return; }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  const idToken = authHeader.split('Bearer ')[1];
+
+  try {
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const { uid, email, displayName } = decodedToken;
+
+    // Check if user profile already exists
+    const existingProfile = await db.collection('users').doc(uid).get();
+    if (existingProfile.exists) {
+      res.status(200).json({ success: true, message: 'User profile already exists' });
+      return;
+    }
+
+    // Create user profile in Firestore
+    const userProfile = {
+      uid,
+      email: email || '',
+      displayName: displayName || '',
+      role: 'customer',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastLoginAt: new Date(),
+      preferences: { marketingEmails: true, orderNotifications: true },
+      emailVerified: decodedToken.email_verified || false,
+    };
+
+    await db.collection('users').doc(uid).set(userProfile);
+    info('User profile created successfully', { uid });
+    res.status(201).json({ success: true, message: 'User profile created' });
+  } catch (err) {
+    error('Error creating user profile', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 /** Set custom claims for admin users */
 export const setAdminRole = onRequest(async (req, res) => {
   info('Admin role request', { method: req.method });
