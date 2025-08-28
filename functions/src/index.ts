@@ -1,6 +1,6 @@
 // index.ts
 import { onRequest } from 'firebase-functions/v2/https';
-import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+
 import { info, error, warn } from 'firebase-functions/logger';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -126,18 +126,7 @@ export const config = onRequest(async (req, res) => {
   }
 });
 
-/** ✅ Firestore trigger for new user profiles */
-export const onUserProfileCreated = onDocumentCreated('users/{userId}', async (event) => {
-  const userData = event.data?.data();
-  if (!userData) {
-    error('No user data in document');
-    return;
-  }
-  info('New user profile created', { uid: event.params.userId, email: userData.email });
-  
-  // Additional processing can be done here
-  // For example, send welcome email, update analytics, etc.
-});
+
 
 /** ✅ HTTP endpoint to create user profile (called from client after auth) */
 export const createUserProfile = onRequest(async (req, res) => {
