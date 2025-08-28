@@ -2,7 +2,7 @@ name: Deploy to Firebase
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, "**" ]   # main + all branches (for previews)
   pull_request:
     branches: [ main ]
 
@@ -29,7 +29,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: functions/package-lock.json
 
-      - name: Install Functions dependencies
+      - name: Install Functions deps
         run: |
           cd functions
           npm ci
@@ -39,17 +39,18 @@ jobs:
           cd functions
           npm run build
 
-      - name: Validate Firebase configuration
+      - name: Validate Firebase config / site files
         run: |
           test -f firebase.json
           test -f public/index.html
           test -f firestore.rules
           test -f storage.rules
 
+  # PREVIEW deploys (PRs and any non-main branch push)
   deploy-preview:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.ref != 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,35 +60,27 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Deploy Hosting Preview (PR channel)
+      - name: Compute preview channel id
+        id: compute
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "channel=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "channel=preview-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Using channel: $(cat $GITHUB_OUTPUT)"
+
+      - name: Deploy Hosting Preview
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
           projectId: vida-tea
-          channelId: pr-${{ github.event.number }}   # REQUIRED for previews
+          channelId: ${{ steps.compute.outputs.channel }}   # <-- ALWAYS set
           expires: 7d
 
-  # Optional: previews for non-main branch pushes (not PRs)
-  # Uncomment this job if you want a preview for any branch push.
-  # deploy-branch-preview:
-  #   needs: build-and-test
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #     - name: Deploy Hosting Preview (branch)
-  #       uses: FirebaseExtended/action-hosting-deploy@v0
-  #       with:
-  #         repoToken: ${{ secrets.GITHUB_TOKEN }}
-  #         firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
-  #         projectId: vida-tea
-  #         channelId: preview-${{ github.sha }}     # unique per commit
-  #         expires: 7d
-
+  # LIVE deploys on main
   deploy-production:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -110,11 +103,10 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
           projectId: vida-tea
-          # If you later define a hosting target alias in .firebaserc, add:
-          # target: <alias>
+          # (no channelId here → deploys to LIVE)
 
-      # Ensure Functions deps/build in this job too (separate runner)
-      - name: Install Functions dependencies
+      # New runner → install & build functions again before deploy
+      - name: Install Functions deps
         run: |
           cd functions
           npm ci
@@ -130,5 +122,6 @@ jobs:
           args: deploy --only functions --project vida-tea
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
+
 
 
