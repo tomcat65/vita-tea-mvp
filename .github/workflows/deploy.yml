@@ -104,8 +104,10 @@ jobs:
           npm run build
 
       - name: Setup IAM permissions for Functions
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
         run: |
-          echo ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }} > /tmp/gcp-key.json
+          echo "$GCP_SA_KEY" > /tmp/gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
           gcloud config set project vida-tea
