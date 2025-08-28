@@ -1,6 +1,6 @@
 // index.ts
 import { onRequest } from 'firebase-functions/v2/https';
-import { beforeUserCreated } from 'firebase-functions/v2/identity';
+import * as functions from 'firebase-functions/v1';
 import { info, error, warn } from 'firebase-functions/logger';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -127,12 +127,7 @@ export const config = onRequest(async (req, res) => {
 });
 
 /** ✅ Auth trigger for new user accounts */
-export const onUserCreate = beforeUserCreated(async (event) => {
-  const user = event.data;
-  if (!user) {
-    error('No user data in event');
-    return;
-  }
+export const onUserCreate = functions.auth.user().onCreate(async (user: functions.auth.UserRecord) => {
   info('New user created', { uid: user.uid, email: user.email });
 
   const userProfile = {
