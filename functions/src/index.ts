@@ -126,7 +126,7 @@ export const config = onRequest(async (req, res) => {
   }
 });
 
-/** ✅ Auth trigger for new user accounts */
+/** ✅ Auth trigger for new user accounts (v2 blocking function) */
 export const onUserCreate = beforeUserCreated(async (event) => {
   const user = event.data;
   if (!user) {
@@ -135,6 +135,7 @@ export const onUserCreate = beforeUserCreated(async (event) => {
   }
   info('New user created', { uid: user.uid, email: user.email });
 
+  // Create user profile in Firestore
   const userProfile = {
     uid: user.uid,
     email: user.email || '',
@@ -153,6 +154,9 @@ export const onUserCreate = beforeUserCreated(async (event) => {
   } catch (err) {
     error('Error creating user profile', err);
   }
+
+  // Return undefined to not block user creation
+  return undefined;
 });
 
 /** Set custom claims for admin users */
