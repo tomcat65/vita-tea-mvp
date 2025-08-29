@@ -68,7 +68,7 @@ jobs:
       - name: Deploy Hosting preview (main)
         uses: w9jds/firebase-action@master
         with:
-          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --only hosting:main --project vida-tea --expires 7d
+          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --only hosting:vida-tea --project vida-tea --expires 7d
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
@@ -76,7 +76,7 @@ jobs:
       - name: Deploy Hosting preview (admin)
         uses: w9jds/firebase-action@master
         with:
-          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --only hosting:admin --project vida-tea --expires 7d
+          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --only hosting:vida-tea-admin --project vida-tea --expires 7d
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
@@ -95,7 +95,7 @@ jobs:
       - name: Deploy Hosting (main live)
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting:main --project vida-tea
+          args: deploy --only hosting:vida-tea --project vida-tea
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
@@ -103,7 +103,7 @@ jobs:
       - name: Deploy Hosting (admin live)
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting:admin --project vida-tea
+          args: deploy --only hosting:vida-tea-admin --project vida-tea
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
