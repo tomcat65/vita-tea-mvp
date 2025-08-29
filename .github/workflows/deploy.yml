@@ -2,11 +2,9 @@ name: Deploy to Firebase
 
 on:
   push:
-    branches:
-      - '**'          # all branches
+    branches: [ "**" ]        # all branches
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -34,6 +32,7 @@ jobs:
         run: |
           test -f firebase.json
           test -f public/index.html
+          test -f admin/index.html
           test -f firestore.rules
           test -f storage.rules
 
@@ -47,7 +46,7 @@ jobs:
           cd functions
           npm run build
 
-  # PREVIEW deploys for PRs and any non-main branch push
+  # === PREVIEW for PRs and all non-main branches ===
   deploy-preview:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -55,7 +54,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Compute a guaranteed channel id
       - name: Compute preview channel id
         id: ch
         shell: bash
@@ -65,17 +63,24 @@ jobs:
           else
             echo "channel=preview-${{ github.sha }}" >> "$GITHUB_OUTPUT"
           fi
-          echo "Channel: $(cat $GITHUB_OUTPUT)"
 
-      # Use firebase CLI via w9jds action (passes our channel explicitly)
-      - name: Deploy Hosting Preview
+      # Storefront preview (target: main)
+      - name: Deploy Hosting preview (main)
         uses: w9jds/firebase-action@master
         with:
-          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --project vida-tea --expires 7d
+          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --only hosting:main --project vida-tea --expires 7d
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
-  # LIVE deploy on main
+      # Admin preview (target: admin)
+      - name: Deploy Hosting preview (admin)
+        uses: w9jds/firebase-action@master
+        with:
+          args: hosting:channel:deploy ${{ steps.ch.outputs.channel }} --only hosting:admin --project vida-tea --expires 7d
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
+
+  # === PRODUCTION for main ===
   deploy-production:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -86,39 +91,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy Hosting (live)
+      # Live deploy (target: main)
+      - name: Deploy Hosting (main live)
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting --project vida-tea
+          args: deploy --only hosting:main --project vida-tea
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
 
-      # New runner => install & build functions again before deploy
+      # Live deploy (target: admin)
+      - name: Deploy Hosting (admin live)
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting:admin --project vida-tea
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
+
+      # Fresh runner → reinstall & build functions before deploy
       - name: Install Functions deps
         run: |
           cd functions
           npm ci
+
       - name: Build Functions
         run: |
           cd functions
           npm run build
 
-      - name: Setup IAM permissions for Functions
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
-        run: |
-          printf '%s' "$GCP_SA_KEY" > /tmp/gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json
-          gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
-          gcloud config set project vida-tea
-          echo "Attempting to set IAM permissions..."
-          gcloud projects add-iam-policy-binding vida-tea --member=serviceAccount:service-669969532716@gcp-sa-pubsub.iam.gserviceaccount.com --role=roles/iam.serviceAccountTokenCreator || echo "Permission already exists or failed to set"
-          gcloud projects add-iam-policy-binding vida-tea --member=serviceAccount:669969532716-compute@developer.gserviceaccount.com --role=roles/run.invoker || echo "Permission already exists or failed to set"
-          gcloud projects add-iam-policy-binding vida-tea --member=serviceAccount:669969532716-compute@developer.gserviceaccount.com --role=roles/eventarc.eventReceiver || echo "Permission already exists or failed to set"
-        
       - name: Deploy Cloud Functions
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only functions --project vida-tea --force
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIDA_TEA }}
+
