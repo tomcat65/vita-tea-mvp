@@ -6,6 +6,9 @@ import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import type { Request, Response } from 'express';
+// at the very top of functions/src/index.ts (before initializeApp)
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.vida-tea' });
 
 // Initialize Firebase Admin
 initializeApp();
@@ -62,32 +65,24 @@ export const config = onRequest(async (req, res) => {
   res.set('Cache-Control', 'public, max-age=300');
 
   try {
+    // Use env if present; otherwise fall back to the public client config (safe for Firebase Web)
     const firebaseConfig = {
-      apiKey: process.env.FIREBASE_API_KEY,
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-      appId: process.env.FIREBASE_APP_ID,
-      measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+      apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyBh4BNjpxfY_dgt3FojKFMD7KEIisf1iWg',
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'vida-tea.firebaseapp.com',
+      projectId: process.env.FIREBASE_PROJECT_ID || 'vida-tea',
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'vida-tea.firebasestorage.app',
+      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '669969532716',
+      appId: process.env.FIREBASE_APP_ID || '1:669969532716:web:02d938f0e13f73575f0e89',
+      measurementId: process.env.FIREBASE_MEASUREMENT_ID || 'G-SS8PB0TT8D',
     };
 
-    // Validate that all required config values are present
-    const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
-    const missingFields = requiredFields.filter(field => !firebaseConfig[field as keyof typeof firebaseConfig]);
-    
-    if (missingFields.length > 0) {
-      error('Missing required Firebase config environment variables', { missingFields });
-      res.status(500).json({ error: 'Firebase configuration incomplete' });
-      return;
-    }
     res.status(200).json(firebaseConfig);
-      } catch (err) {
-      error('Error serving config', err);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-  
+  } catch (err) {
+    error('Error serving config', err as any);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
   /** Analytics tracking */
   export const trackAnalytics = onRequest(async (req, res) => {
     info('Analytics event received', { method: req.method });
