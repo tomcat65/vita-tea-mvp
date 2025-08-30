@@ -21,6 +21,7 @@ const ALLOWED_ORIGINS = [
   'https://www.vita-tea.com',
   'https://vida-tea.web.app',
   'https://vida-tea.firebaseapp.com',
+  'https://admin.vita-tea.com', 
 ];
 
 // In development, also allow localhost
